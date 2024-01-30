@@ -1,75 +1,66 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffe_rating_app_impl/firebase_options.dart';
+import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
 import 'package:flutter/material.dart';
+import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
 
-void main() => runApp(const BottomNavigationBarExampleApp());
+// Import the firebase_core plugin
+import 'package:firebase_core/firebase_core.dart';
 
-class BottomNavigationBarExampleApp extends StatelessWidget {
-  const BottomNavigationBarExampleApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: CoffeListApp(),
-    );
-  }
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(App());
 }
 
-class CoffeListApp extends StatefulWidget {
-  const CoffeListApp({super.key});
+class App extends StatefulWidget {
+  const App({Key? key});
 
   @override
-  State<CoffeListApp> createState() =>
-      _CoffeListAppState();
+  State<App> createState() => _AppState();
 }
 
-class _CoffeListAppState
-    extends State<CoffeListApp> {
-  int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Index 0: Home',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 1: Business',
-      style: optionStyle,
-    ),
-    Text(
-      'Index 2: School',
-      style: optionStyle,
-    ),
+class _AppState extends State<App> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const CoffeBeanInMachine(),
+    const CoffeBeanTypeList(),
   ];
 
-  void _onItemTapped(int index) {
+  void _onTabTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _currentIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('BottomNavigationBar Sample'),
+    return MaterialApp(
+      title: 'Coffee Rating App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.coffee_maker),
-            label: 'Currently Brewing',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.coffee_rounded),
-            label: 'List of coffe',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
+      home: Scaffold(
+        body: _pages[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.coffee_maker_outlined),
+              label: 'Current Coffee',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.coffee_outlined),
+              label: 'Coffee List',
+            ),
+          ],
+        ),
       ),
     );
   }

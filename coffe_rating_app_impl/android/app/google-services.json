@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "760010668205",
+    "project_id": "coffe-rating-backend",
+    "storage_bucket": "coffe-rating-backend.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760010668205:android:b7ed6ca9dc389f1902ee24",
+        "android_client_info": {
+          "package_name": "com.example.coffe_rating_app_impl"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD20LlzCuS1gK4htNj5BMVv8ejPXgMOyHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
