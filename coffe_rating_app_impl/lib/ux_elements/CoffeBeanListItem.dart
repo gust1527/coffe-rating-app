@@ -10,22 +10,15 @@ class CoffeeBeanListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Column(
-          children: ListTile.divideTiles(
-            context: context,
-            tiles: [
-              ListTile(
-                title: Text(bean.beanType),
-                trailing: Column(
-                  children: [
-                    Text(bean.calculateMeanRating().toString()),
-                    const Icon(Icons.star),
-                  ],
-                ),
-                dense: false,
-              ),
+        ListTile(
+          title: Text(bean.beanType),
+          trailing: Column(
+            children: [
+              Text(bean.calculateMeanRating().toString()),
+              const Icon(Icons.star),
             ],
-          ).toList(),
+          ),
+          dense: false,
         ),
       ],
     );

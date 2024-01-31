@@ -41,8 +41,9 @@ class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
           }
 
           // If all the other checks are false, then the stream is ready to be displayed
-          return ListView.builder(
+          return ListView.separated(
             itemCount: snapshot.data!.docs.length,
+            separatorBuilder: (BuildContext context, int index) => Divider(),
             itemBuilder: (context, index) {
               // Get the document from the snapshot
               final DocumentSnapshot document = snapshot.data!.docs[index];
