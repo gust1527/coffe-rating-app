@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanProvider.dart';
+import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:flutter/material.dart';
 
@@ -11,8 +11,8 @@ class CoffeBeanInMachine extends StatefulWidget {
 }
 
 class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
-  final CoffeBeanProvider dbProvider = CoffeBeanProvider();
-  late final Stream<QuerySnapshot> beanStream = dbProvider.getDBStream();
+  final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
+  late final Stream<QuerySnapshot> beanStream = db_provider.getDBStream();
 
   double beanRating = 1; // Default bean rating
 
@@ -40,15 +40,9 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
               child: CircularProgressIndicator(),
             );
           } else {
-              
-              final DocumentSnapshot document = snapshot.data!.docs.firstWhere((doc) => doc['is_in_machine'] == true);
-              // Cast document?.data() to Map<String, dynamic>
-              final Map<String, dynamic>? data = document.data() as Map<String, dynamic>?;
 
               // Create a CoffeeBeanType from the data
-              CoffeBeanType beanType = CoffeBeanType.fromJson(data, document.id);
-
-              
+              CoffeBeanType beanType = CoffeBeanType.fromJson(snapshot.data!.docs.first.data() as Map<String, dynamic>, snapshot.data!.docs.first.id);
 
             // If all the other checks are false, then the stream is ready to be displayed
             return Column(
@@ -81,7 +75,12 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 ElevatedButton(
                   onPressed: () {
                     // Update the bean in the database
-                    dbProvider.addRatingsToCoffeBeanType(beanType.id, beanRating.toInt());
+                    db_provider.addRatingsToCoffeBeanType(beanType.id, beanRating.toInt());
+
+                    // Reset the bean rating
+                    setState(() {
+                      beanRating = 1;
+                    });
                     // Show a snackbarss
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

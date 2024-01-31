@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanProvider.dart';
+import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/ux_elements/CoffeBeanListItem.dart';
@@ -12,7 +12,7 @@ class CoffeBeanTypeList extends StatefulWidget {
 }
 
 class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
-  final CoffeBeanProvider db_provider = CoffeBeanProvider();
+  final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
   late final Stream<QuerySnapshot> beanStream = db_provider.getDBStream();
 
   @override
