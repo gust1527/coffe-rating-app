@@ -10,11 +10,24 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   @override
   Future<String> addCoffeBeanType(String beanType) async {
     try {
+      // First set the old coffee bean type to false, by calling the getCoffeBeanInMachine method
+      CoffeBeanType currentBeanInMachine = await getCoffeBeanInMachine();
+
+      // Get the coffee bean type document using the id
+      DocumentSnapshot docSnapshot = await _db.collection('coffe_bean_types').doc(currentBeanInMachine.id).get();
+
+      // If there is a coffee bean type in the machine, then set it to false
+      if (docSnapshot.exists) {
+        await _db.collection('coffe_bean_types').doc(currentBeanInMachine.id).update({
+          'is_in_machine': false,
+        });
+      }
+
       // Add the coffee bean type to the collection
       DocumentReference docRef = await _db.collection('coffe_bean_types').add({
         'coffe_bean_type': beanType,
         'bean_rating': [],
-        'is_in_machine': false,
+        'is_in_machine': true,
       });
       return docRef.id;
     } catch (e) {

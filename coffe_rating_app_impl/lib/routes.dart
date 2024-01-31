@@ -1,7 +1,9 @@
-import 'package:coffe_rating_app_impl/coffeList/coffeList.dart';
-import 'package:coffe_rating_app_impl/currentCoffe/currentCoffe.dart';
+import 'package:coffe_rating_app_impl/pages/addCoffeBean.dart';
+import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
+import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
 
 var AppRoutes = {
-  '/currentCoffe': (context) => const CurrentCoffe(),
-  '/coffeList': (context) => const CoffeList(),
+  '/': (context) => const CoffeBeanInMachine(),
+  '/coffeList': (context) => const CoffeBeanTypeList(),
+  '/addCoffeBean': (context) => AddCoffeBean(),
 };

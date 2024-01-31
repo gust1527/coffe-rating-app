@@ -28,8 +28,8 @@ class _AppState extends State<App> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const CoffeBeanInMachine(),
-    const CoffeBeanTypeList(),
+    CoffeBeanInMachine(),
+    CoffeBeanTypeList(),
   ];
 
   void _onTabTapped(int index) {

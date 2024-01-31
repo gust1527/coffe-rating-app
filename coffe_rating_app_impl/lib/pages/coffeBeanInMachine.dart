@@ -21,7 +21,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Coffe Bean in Machine'),
-        backgroundColor: Colors.white, // Add a valid color value here
+        backgroundColor: Colors.yellow[700], // Add a valid color value here
       ),
       body: StreamBuilder(
         stream: beanStream,
@@ -41,24 +41,27 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
             );
           } else {
 
-              // Create a CoffeeBeanType from the data
-              CoffeBeanType beanType = CoffeBeanType.fromJson(snapshot.data!.docs.first.data() as Map<String, dynamic>, snapshot.data!.docs.first.id);
+            // Get the document from the snapshot
+            DocumentSnapshot document = snapshot.data!.docs.firstWhere((element) => (element.data() as Map<String, dynamic>)['is_in_machine'] == true);
+
+            // Create a CoffeeBeanType from the data
+            CoffeBeanType beanType = CoffeBeanType.fromJson(document.data() as Map<String, dynamic>, document.id);
 
             // If all the other checks are false, then the stream is ready to be displayed
             return Column(
               children: [
                 SizedBox(height: 20),
-                Icon(
+                const Icon(
                   Icons.coffee,
                   size: 100,
                   color: Colors.brown,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   beanType.beanType,
-                  style: TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 24),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Slider(
                   value: beanRating,
                   min: 1,
@@ -71,7 +74,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                     });
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     // Update the bean in the database
