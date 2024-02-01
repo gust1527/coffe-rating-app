@@ -11,7 +11,9 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   Future<String> addCoffeBeanType(String beanType) async {
     try {
       // First set the old coffee bean type to false, by calling the getCoffeBeanInMachine method
-      CoffeBeanType currentBeanInMachine = await getCoffeBeanInMachine();
+      CoffeBeanType? currentBeanInMachine = await getCoffeBeanInMachine();
+
+      if(currentBeanInMachine != null) {
 
       // Get the coffee bean type document using the id
       DocumentSnapshot docSnapshot = await _db.collection('coffe_bean_types').doc(currentBeanInMachine.id).get();
@@ -22,6 +24,8 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
           'is_in_machine': false,
         });
       }
+      }
+
 
       // Add the coffee bean type to the collection
       DocumentReference docRef = await _db.collection('coffe_bean_types').add({
@@ -58,7 +62,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   }
 
   @override
-  Future<CoffeBeanType> getCoffeBeanInMachine() async {
+  Future<CoffeBeanType?> getCoffeBeanInMachine() async {
     try {
       // Get the coffee bean type document
       QuerySnapshot<Map<String, dynamic>> querySnapshot = await _db.collection('coffe_bean_types').where('is_in_machine', isEqualTo: true).get();
@@ -73,12 +77,12 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
       }
     } catch (e) {
       // Handle any errors
-      throw Exception('Error getting coffee bean in machine: $e');
+      return null;
     }
   }
 
   @override
-  Future<CoffeBeanType> getCoffeBeanType(String id) async {
+  Future<CoffeBeanType?> getCoffeBeanType(String id) async {
     try {
       // Get the coffee bean type document
       DocumentSnapshot docSnapshot = await _db.collection('coffe_bean_types').doc(id).get();
@@ -87,7 +91,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
         CoffeBeanType coffeeBeanType = CoffeBeanType.fromJson(docSnapshot.data() as Map<String, dynamic>, docSnapshot.id);
         return coffeeBeanType;
       } else {
-        throw Exception('No coffee bean type found');
+        return null; // Return null if coffee bean type is not found
       }
     } catch (e) {
       // Handle any errors
@@ -98,5 +102,37 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   @override
   Stream<QuerySnapshot<Object?>> getDBStream() {
     return _db.collection('coffe_bean_types').snapshots();
+  }
+  
+  @override
+  Future<void> addCoffeBeanToMachine(String id) async {
+    try {
+      // First set the old coffee bean type to false, by calling the getCoffeBeanInMachine method
+      CoffeBeanType? currentBeanInMachine = await getCoffeBeanInMachine();
+
+      if(currentBeanInMachine != null) {
+
+        // Get the coffee bean type document using the id
+        DocumentSnapshot docSnapshot = await _db.collection('coffe_bean_types').doc(currentBeanInMachine.id).get();
+
+        // If there is a coffee bean type in the machine, then set it to false
+        if (docSnapshot.exists) {
+          await _db.collection('coffe_bean_types').doc(currentBeanInMachine.id).update({
+            'is_in_machine': false,
+          });
+        }
+
+        DocumentSnapshot newDocSnapshot = await _db.collection('coffe_bean_types').doc(id).get();
+        if (newDocSnapshot.exists) {
+          // Update the 'is_in_machine' field to true
+          await newDocSnapshot.reference.update({
+            'is_in_machine': true,
+          });
+        }
+      }
+    } catch (error) {
+      // Handle any errors
+      throw Exception('Error adding coffee bean to machine: $error');
+    }
   }
 }

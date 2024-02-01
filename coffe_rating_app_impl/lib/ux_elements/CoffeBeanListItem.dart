@@ -1,11 +1,13 @@
+import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/ux_elements/CoffeBeanRatingBar.dart';
 import 'package:flutter/material.dart';
 
 class CoffeeBeanListItem extends StatelessWidget {
   final CoffeBeanType bean;
+  final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
 
-  const CoffeeBeanListItem({Key? key, required this.bean}) : super(key: key);
+  CoffeeBeanListItem({super.key, required this.bean});
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,19 @@ class CoffeeBeanListItem extends StatelessWidget {
             width: 120,
           child: CoffeeBeanRatingBar(rating: rating)),
         dense: false,
+        onTap: () {
+          // Add the coffee bean to the machine
+          db_provider.addCoffeBeanToMachine(bean.id);
+
+          // Show a snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Added ${bean.beanType} to the machine'),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+          
+        },
       ),
     );
   }
