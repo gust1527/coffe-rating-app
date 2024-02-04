@@ -22,7 +22,7 @@ class CoffeeBeanListItem extends StatelessWidget {
               '${bean.beanMaker} ',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 5),
             Expanded(child: Text('${bean.beanType}: ')),
             Text(bean.calculateMeanRating().toString()),
           ],
@@ -40,6 +40,8 @@ class CoffeeBeanListItem extends StatelessWidget {
         onLongPress: () {
           // To DO: Add a dialog to show all ratings for bean type
         },
+        selected: bean.isInMachine,
+        selectedTileColor: Colors.grey[300],
       ),
     );
   }
