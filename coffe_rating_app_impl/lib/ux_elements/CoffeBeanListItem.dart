@@ -27,7 +27,7 @@ class CoffeeBeanListItem extends StatelessWidget {
         dense: false,
         onTap: () {
           // Add the coffee bean to the machine
-          db_provider.addCoffeBeanToMachine(bean.id);
+          db_provider.setCoffeBeanToMachine(bean.id);
 
           // Show a snackbar
           ScaffoldMessenger.of(context).showSnackBar(

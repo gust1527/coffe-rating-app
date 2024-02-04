@@ -105,7 +105,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   }
   
   @override
-  Future<void> addCoffeBeanToMachine(String id) async {
+  Future<void> setCoffeBeanToMachine(String id) async {
     try {
       // First set the old coffee bean type to false, by calling the getCoffeBeanInMachine method
       CoffeBeanType? currentBeanInMachine = await getCoffeBeanInMachine();

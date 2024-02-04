@@ -12,5 +12,5 @@ abstract class CoffeeBeanDBProviderInterface {
 
   Stream<QuerySnapshot> getDBStream();
 
-  Future<void> addCoffeBeanToMachine(String id);
+  Future<void> setCoffeBeanToMachine(String id);
 }

@@ -35,7 +35,7 @@ class CoffeBeanType {
     // Calculate the mean rating
     double mean = sum / beanRating.length;
 
-    // Return the mean value as rounded value
-    return mean.roundToDouble();
+    // Return the mean value as regular value
+    return mean;
   }
 }
