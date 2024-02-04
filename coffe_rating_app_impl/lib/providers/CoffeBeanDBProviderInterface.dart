@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 
 abstract class CoffeeBeanDBProviderInterface {
-  Future<String> addCoffeBeanType(String beanType);
+  Future<String> addCoffeBeanType(String beanMaker, String beanType);
 
   Future<CoffeBeanType?> getCoffeBeanType(String id);
 

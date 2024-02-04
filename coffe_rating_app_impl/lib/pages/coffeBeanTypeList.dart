@@ -1,4 +1,4 @@
-import 'package:coffe_rating_app_impl/pages/addCoffeBean.dart';
+import 'package:coffe_rating_app_impl/ux_elements/AddCoffeBean.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';

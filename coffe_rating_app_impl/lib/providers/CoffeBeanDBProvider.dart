@@ -8,7 +8,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   @override
-  Future<String> addCoffeBeanType(String beanType) async {
+  Future<String> addCoffeBeanType(String beanMaker, String beanType) async {
     try {
       // First set the old coffee bean type to false, by calling the getCoffeBeanInMachine method
       CoffeBeanType? currentBeanInMachine = await getCoffeBeanInMachine();
@@ -29,6 +29,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
 
       // Add the coffee bean type to the collection
       DocumentReference docRef = await _db.collection('coffe_bean_types').add({
+        'coffe_bean_maker' : beanMaker,
         'coffe_bean_type': beanType,
         'bean_rating': [],
         'is_in_machine': true,

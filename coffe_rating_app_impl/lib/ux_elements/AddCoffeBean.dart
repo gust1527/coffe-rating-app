@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 
 class AddCoffeBean extends StatelessWidget {
   final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
-  String input;
+  String beanMakerInput;
+  String beanTypeInput;
 
-  AddCoffeBean({super.key}) : input = '';
+  AddCoffeBean({super.key}) : beanMakerInput = '', beanTypeInput = '';
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +17,20 @@ class AddCoffeBean extends StatelessWidget {
         children: [
           TextField(
             onChanged: (value) {
-              input = value;
+              beanMakerInput = value;
+            },
+            decoration: const InputDecoration(
+              labelText: 'Enter name of bean maker',
+              contentPadding: EdgeInsets.only(top: 8.0), // Adjust the top padding here
+            ),
+          ),
+          TextField(
+            onChanged: (value) {
+              beanTypeInput = value;
             },
             decoration: const InputDecoration(
               labelText: 'Enter name of bean type',
+              contentPadding: EdgeInsets.only(top: 8.0), // Adjust the top padding here
             ),
           ),
         ],
@@ -33,12 +44,12 @@ class AddCoffeBean extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
               const SizedBox(width: 20),
               ElevatedButton(
                 onPressed: () {
-                  db_provider.addCoffeBeanType(input);
+                  db_provider.addCoffeBeanType(beanMakerInput, beanTypeInput);
                   Navigator.pop(context);
                 },
                 child: Text('Submit'),

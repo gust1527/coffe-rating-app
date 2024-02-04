@@ -1,4 +1,4 @@
-import 'package:coffe_rating_app_impl/pages/addCoffeBean.dart';
+import 'package:coffe_rating_app_impl/ux_elements/AddCoffeBean.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
 

@@ -57,30 +57,40 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                   color: Colors.brown,
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  beanType.beanType,
-                  style: const TextStyle(fontSize: 24),
+                Flexible(
+                  child: Text(
+                    beanType.beanMaker,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const SizedBox(height: 20),
+                Flexible(
+                  child: Text(
+                    beanType.beanType,
+                    style: const TextStyle(fontSize: 24),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 40),
                 Slider(
                   value: beanRating,
-                  min: 1,
-                  max: 5,
-                  divisions: 4,
-                  label: beanRating.round().toString(),
+                  min: 1.0,
+                  max: 5.0,
+                  divisions: 8,
+                  label: beanRating.toString(),
                   onChanged: (value) {
                     setState(() {
                       beanRating = value;
                     });
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: () {
                     // Update the bean in the database
                     db_provider.addRatingsToCoffeBeanType(beanType.id, beanRating.toInt());
 
-                    // Reset the bean rating
+                    // Reset the bean ratingr
                     setState(() {
                       beanRating = 1;
                     });

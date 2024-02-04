@@ -14,7 +14,7 @@ class CoffeBeanType {
   });
 
   CoffeBeanType.fromJson(Map<String, dynamic>? json, this.id)
-    : beanMaker = json['coffe_bean_maker'] as String? ?? '',
+    : beanMaker = json?['coffe_bean_maker'] as String? ?? '',
       beanType = json?['coffe_bean_type'] as String? ?? '',
       beanRating = (json?['bean_rating'] as List<dynamic>?)?.map((rating) => int.parse(rating.toString())).toList() ?? [],
       isInMachine = json?['is_in_machine'] as bool? ?? false;
