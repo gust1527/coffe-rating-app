@@ -32,25 +32,23 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
           bool docsIsLoading = snapshot.connectionState == ConnectionState.waiting;
 
           // Return a widget based on the state of the stream
-          if (docsIsLoading) {
-            return const CircularProgressIndicator();
-          } else if (!docsHasData || !docsIsNotEmpty) {
-            // If the stream is loading, then show a Progress indicator
+          if (docsIsLoading) { // If the stream is loading, then show a loading indicator
+            return const Center(child: CircularProgressIndicator());
+          } else if (!docsHasData || !docsIsNotEmpty) { // If the stream has no data, then show a message
             return const Center(
-              child: CircularProgressIndicator(),
+              child: Text('Error fetching current bean in machine'),
             );
           } else {
-
             // Get the document from the snapshot
             DocumentSnapshot document = snapshot.data!.docs.firstWhere((element) => (element.data() as Map<String, dynamic>)['is_in_machine'] == true);
 
             // Create a CoffeeBeanType from the data
-            CoffeBeanType beanType = CoffeBeanType.fromJson(document.data() as Map<String, dynamic>, document.id);
+            CoffeBeanType currentBean = CoffeBeanType.fromJson(document.data() as Map<String, dynamic>, document.id);
 
             // If all the other checks are false, then the stream is ready to be displayed
             return Column(
               children: [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 const Icon(
                   Icons.coffee,
                   size: 100,
@@ -59,14 +57,14 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 const SizedBox(height: 20),
                 Flexible(
                   child: Text(
-                    beanType.beanMaker,
+                    currentBean.beanMaker,
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Flexible(
                   child: Text(
-                    beanType.beanType,
+                    currentBean.beanType,
                     style: const TextStyle(fontSize: 24),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -88,7 +86,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 ElevatedButton(
                   onPressed: () {
                     // Update the bean in the database
-                    db_provider.addRatingsToCoffeBeanType(beanType.id, beanRating.toInt());
+                    db_provider.addRatingsToCoffeBeanType(currentBean.id, beanRating.toInt());
 
                     // Reset the bean ratingr
                     setState(() {
@@ -97,12 +95,12 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                     // Show a snackbarss
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Rating added to bean: ${beanType.id}'),
-                        duration: Duration(seconds: 5),
+                        content: Text('Rating added to bean: ${currentBean.beanType}'),
+                        duration: const Duration(seconds: 5),
                       ),
                     );
                   },
-                  child: Text('Submit Rating'),
+                  child: const Text('Submit Rating'),
                 ),
               ],
             );
