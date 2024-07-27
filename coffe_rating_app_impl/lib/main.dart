@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/firebase_options.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
 import 'package:flutter/material.dart';
@@ -14,11 +13,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(App());
+  runApp(const App());
 }
 
 class App extends StatefulWidget {
-  const App({Key? key});
+  const App({super.key, Key? key});
 
   @override
   State<App> createState() => _AppState();
@@ -28,8 +27,8 @@ class _AppState extends State<App> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    CoffeBeanInMachine(),
-    CoffeBeanTypeList(),
+    const CoffeBeanInMachine(),
+    const CoffeBeanTypeList(),
   ];
 
   void _onTabTapped(int index) {

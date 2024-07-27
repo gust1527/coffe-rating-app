@@ -6,7 +6,7 @@ import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/ux_elements/CoffeBeanListItem.dart';
 
 class CoffeBeanTypeList extends StatefulWidget {
-  const CoffeBeanTypeList({Key? key}) : super(key: key);
+  const CoffeBeanTypeList({super.key});
 
   @override
   _CoffeBeanTypeListState createState() => _CoffeBeanTypeListState();
@@ -46,9 +46,9 @@ class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
               // If all the other checks are false, then the stream is ready to be displayed
               return ListView.separated(
                 itemCount: snapshot.data!.docs.length,
-                separatorBuilder: (BuildContext context, int index) => Container(
+                separatorBuilder: (BuildContext context, int index) => const SizedBox(
                   height: 0,
-                  child: const Divider(),
+                  child: Divider(),
                 ),
                 itemBuilder: (context, index) {
                   // Get the document from the snapshot

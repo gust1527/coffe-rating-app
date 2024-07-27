@@ -11,7 +11,7 @@ class AddCoffeBean extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Coffee Bean'),
+      title: const Text('Add Coffee Bean'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -52,7 +52,7 @@ class AddCoffeBean extends StatelessWidget {
                   db_provider.addCoffeBeanType(beanMakerInput, beanTypeInput);
                   Navigator.pop(context);
                 },
-                child: Text('Submit'),
+                child: const Text('Submit'),
               ),
             ],
           ),

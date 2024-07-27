@@ -36,7 +36,7 @@ class SetBeanInMachine extends StatelessWidget {
                     ),
                   ); // Add missing semicolon here
                 }, // Add missing closing parentheses here
-                child: Text('Submit'),
+                child: const Text('Submit'),
               ),
             ],
           ),

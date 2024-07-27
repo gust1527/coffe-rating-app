@@ -8,7 +8,7 @@ class CoffeeBeanListItem extends StatelessWidget {
   final CoffeBeanType bean;
   final CoffeBeanDBProvider dbProvider = CoffeBeanDBProvider();
 
-  CoffeeBeanListItem({Key? key, required this.bean});
+  CoffeeBeanListItem({super.key, Key? key, required this.bean});
 
   @override
   Widget build(BuildContext context) {

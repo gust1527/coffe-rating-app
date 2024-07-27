@@ -4,7 +4,7 @@ import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:flutter/material.dart';
 
 class CoffeBeanInMachine extends StatefulWidget {
-  const CoffeBeanInMachine({Key? key}) : super(key: key);
+  const CoffeBeanInMachine({super.key});
 
   @override
   _CoffeBeanInMachineState createState() => _CoffeBeanInMachineState();
@@ -72,7 +72,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 const SizedBox(height: 40),
                 Slider(
                   value: beanRating,
-                  min: 1.0,
+                  min: 0.0,
                   max: 5.0,
                   divisions: 8,
                   label: beanRating.toString(),
@@ -85,12 +85,23 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: () {
+                    // Boolean expression for readability
+                    bool beanRatingIsZero = beanRating == 0;
+
+                    // If the bean rating is zero, then show a snackbar
+                    if (!beanRatingIsZero) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please select a rating greater than 0'),
+                          duration: Duration(seconds: 5),
+                        ),
+                      );
+                    } else {
                     // Update the bean in the database
                     db_provider.addRatingsToCoffeBeanType(currentBean.id, beanRating.toInt());
-
                     // Reset the bean ratingr
                     setState(() {
-                      beanRating = 1;
+                      beanRating = 0;
                     });
                     // Show a snackbarss
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -99,6 +110,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                         duration: const Duration(seconds: 5),
                       ),
                     );
+                    }
                   },
                   child: const Text('Submit Rating'),
                 ),
