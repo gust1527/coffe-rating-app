@@ -35,11 +35,11 @@ class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
 
               // Return a widget based on the state of the stream
               if (docsIsLoading) {
-                return const CircularProgressIndicator();
+                return const Center(child: CircularProgressIndicator());
               } else if (!docsHasData || !docsIsNotEmpty) {
-                // If the stream is loading, then show a Progress indicator
+                // If the stream is empty, then show a message
                 return const Center(
-                  child: CircularProgressIndicator(),
+                  child: Text('No coffee beans found'),
                 );
               }
 

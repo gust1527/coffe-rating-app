@@ -24,7 +24,7 @@ class CoffeeBeanListItem extends StatelessWidget {
             ),
             const SizedBox(width: 5),
             Expanded(child: Text('${bean.beanType}: ')),
-            Text(bean.calculateMeanRating().toString()),
+            Text(bean.calculateMeanRating().toStringAsFixed(1)),
           ],
         ),
         trailing: Container(
