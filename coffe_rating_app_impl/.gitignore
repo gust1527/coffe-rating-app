@@ -30,6 +30,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+.DS_Store
 
 # Symbolication related
 app.*.symbols
