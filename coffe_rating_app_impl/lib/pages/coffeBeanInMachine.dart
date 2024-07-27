@@ -14,7 +14,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
   final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
   late final Stream<QuerySnapshot> beanStream = db_provider.getDBStream();
 
-  double beanRating = 1; // Default bean rating
+  double beanRating = 0; // Default bean rating
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                   value: beanRating,
                   min: 0.0,
                   max: 5.0,
-                  divisions: 8,
+                  divisions: 10,
                   label: beanRating.toString(),
                   onChanged: (value) {
                     setState(() {
@@ -89,7 +89,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                     bool beanRatingIsZero = beanRating == 0;
 
                     // If the bean rating is zero, then show a snackbar
-                    if (!beanRatingIsZero) {
+                    if (beanRatingIsZero) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Please select a rating greater than 0'),
@@ -106,7 +106,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                     // Show a snackbarss
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Rating added to bean: ${currentBean.beanType}'),
+                        content: Text('Rating added to bean: ${currentBean.beanMaker} - ${currentBean.beanType}'),
                         duration: const Duration(seconds: 5),
                       ),
                     );
