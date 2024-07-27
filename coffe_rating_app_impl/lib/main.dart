@@ -43,6 +43,7 @@ class _AppState extends State<App> {
       title: 'Coffee Rating App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        primaryTextTheme: Typography.blackCupertino,
       ),
       home: Scaffold(
         body: _pages[_currentIndex],

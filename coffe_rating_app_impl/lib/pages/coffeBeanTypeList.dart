@@ -1,4 +1,5 @@
 import 'package:coffe_rating_app_impl/ux_elements/AddCoffeBean.dart';
+import 'package:coffe_rating_app_impl/ux_elements/CoffeAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
@@ -20,7 +21,7 @@ class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Coffee List Page'),
+        title: CoffeAppBar(appBarTitle: 'List of coffe beans',),
         backgroundColor: Colors.yellow[700],
       ),
       body: Stack(

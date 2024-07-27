@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
+import 'package:coffe_rating_app_impl/ux_elements/CoffeAppBar.dart';
 import 'package:flutter/material.dart';
 
 class CoffeBeanInMachine extends StatefulWidget {
@@ -19,10 +20,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Coffe Bean in Machine'),
-        backgroundColor: Colors.yellow[700], // Add a valid color value here
-      ),
+      appBar: CoffeAppBar(appBarTitle: 'Current Coffe',),
       body: StreamBuilder(
         stream: beanStream,
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
