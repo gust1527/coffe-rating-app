@@ -16,6 +16,7 @@ class CoffeBeanTypeList extends StatefulWidget {
 class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
   final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
   late final Stream<QuerySnapshot> beanStream = db_provider.getDBStream();
+  late List<CoffeBeanType> beanList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -43,23 +44,27 @@ class _CoffeBeanTypeListState extends State<CoffeBeanTypeList> {
                   child: Text('No coffee beans found'),
                 );
               }
+              // Create a list of CoffeeBeanType objects from the snapshot
+              // and display them in a ListView
+              snapshot.data!.docs.forEach((DocumentSnapshot document) {
+                final Map<String, dynamic>? data = document.data() as Map<String, dynamic>?;
+                final CoffeBeanType beanType = CoffeBeanType.fromJson(data, document.id);
+                beanList.add(beanType);
+              });
+
+              // Sort the list of CoffeeBeanType objects by the mean rating
+              beanList.sort((a, b) => a.calculateMeanRating().compareTo(b.calculateMeanRating()));
 
               // If all the other checks are false, then the stream is ready to be displayed
               return ListView.separated(
-                itemCount: snapshot.data!.docs.length,
+                itemCount: beanList.length,
                 separatorBuilder: (BuildContext context, int index) => const SizedBox(
                   height: 0,
                   child: Divider(),
                 ),
                 itemBuilder: (context, index) {
-                  // Get the document from the snapshot
-                  final DocumentSnapshot document = snapshot.data!.docs[index];
-
-                  // Cast document?.data() to Map<String, dynamic>
-                  final Map<String, dynamic>? data = document.data() as Map<String, dynamic>?;
-
                   // Create a CoffeeBeanType from the data
-                  final beanType = CoffeBeanType.fromJson(data, document.id);
+                  final beanType = beanList[index];
 
                   // Pass the beanType to the CoffeeBeanListItem, and return a list item
                   return CoffeeBeanListItem(bean: beanType);
