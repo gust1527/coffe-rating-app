@@ -124,9 +124,9 @@ class NordicHomePage extends StatelessWidget {
         rating: averageRating,
         roastLevel: _getRandomRoastLevel(),
         isInMachine: bean.isInMachine,
-        onTap: () {
-          // Navigate to coffee detail
-        },
+        imageUrl: bean.imageUrl,
+        bean: bean,
+        isCommunityBean: false,
       );
     }).toList();
     

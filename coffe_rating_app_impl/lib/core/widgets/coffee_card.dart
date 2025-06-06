@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/pages/coffee_bean_details_page.dart';
+import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 
 class CoffeeCard extends StatelessWidget {
   final String name;
@@ -8,6 +10,8 @@ class CoffeeCard extends StatelessWidget {
   final String? imageUrl;
   final VoidCallback? onTap;
   final bool isInMachine;
+  final CoffeBeanType? bean; // Optional bean for navigation
+  final bool isCommunityBean;
 
   const CoffeeCard({
     super.key,
@@ -17,12 +21,14 @@ class CoffeeCard extends StatelessWidget {
     this.imageUrl,
     this.onTap,
     this.isInMachine = false,
+    this.bean,
+    this.isCommunityBean = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap ?? (bean != null ? () => _navigateToDetails(context) : null),
       child: Container(
         width: 160,
         decoration: BoxDecoration(
@@ -222,5 +228,18 @@ class CoffeeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _navigateToDetails(BuildContext context) {
+    if (bean != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => CoffeeBeanDetailsPage(
+            bean: bean!,
+            isCommunityBean: isCommunityBean,
+          ),
+        ),
+      );
+    }
   }
 } 

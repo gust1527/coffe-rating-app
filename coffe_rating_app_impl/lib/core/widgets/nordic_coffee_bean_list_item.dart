@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/pages/coffee_bean_details_page.dart';
 
 class NordicCoffeBeanListItem extends StatelessWidget {
   final CoffeBeanType bean;
@@ -36,7 +37,7 @@ class NordicCoffeBeanListItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: onTap ?? () => _navigateToDetails(context),
           borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
           child: Padding(
             padding: const EdgeInsets.all(NordicSpacing.md),
@@ -197,6 +198,17 @@ class NordicCoffeBeanListItem extends StatelessWidget {
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(NordicColors.caramel),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToDetails(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CoffeeBeanDetailsPage(
+          bean: bean,
+          isCommunityBean: false, // This is for private beans
         ),
       ),
     );

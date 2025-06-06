@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/widgets/coffee_card.dart';
+import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 
 class HorizontalCoffeeList extends StatelessWidget {
   final String title;
@@ -84,6 +85,8 @@ class HorizontalCoffeeList extends StatelessWidget {
                           imageUrl: coffee.imageUrl,
                           isInMachine: coffee.isInMachine,
                           onTap: coffee.onTap,
+                          bean: coffee.bean,
+                          isCommunityBean: coffee.isCommunityBean,
                         ),
                       );
                     },
@@ -137,6 +140,8 @@ class CoffeeCardData {
   final String? imageUrl;
   final bool isInMachine;
   final VoidCallback? onTap;
+  final CoffeBeanType? bean;
+  final bool isCommunityBean;
 
   const CoffeeCardData({
     required this.name,
@@ -145,5 +150,7 @@ class CoffeeCardData {
     this.imageUrl,
     this.isInMachine = false,
     this.onTap,
+    this.bean,
+    this.isCommunityBean = false,
   });
 } 

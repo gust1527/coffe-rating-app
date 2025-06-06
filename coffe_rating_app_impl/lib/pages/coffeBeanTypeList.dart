@@ -130,7 +130,6 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
                         padding: const EdgeInsets.only(bottom: NordicSpacing.xs),
                         child: NordicCoffeBeanListItem(
                           bean: bean,
-                          onTap: () => _showBeanOptions(context, bean),
                         ),
                       );
                     },
