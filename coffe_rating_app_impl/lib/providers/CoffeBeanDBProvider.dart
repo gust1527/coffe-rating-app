@@ -6,14 +6,18 @@ import 'package:flutter/foundation.dart';
 /// Coffee Bean Database Provider following clean architecture principles
 /// This provider manages coffee bean data and machine state
 class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInterface {
-  // Get Firestore instance
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  // Get Firestore instance via dependency injection
+  final FirebaseFirestore _db;
   
   // State management
   bool _isLoading = false;
   String? _error;
   List<CoffeBeanType> _coffeeBeans = [];
   CoffeBeanType? _currentCoffeeBean;
+
+  // Constructor
+  CoffeBeanDBProvider({FirebaseFirestore? firestore}) 
+    : _db = firestore ?? FirebaseFirestore.instance;
   
   // Getters for state
   bool get isLoading => _isLoading;

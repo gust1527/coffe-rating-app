@@ -3,6 +3,7 @@ import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/ux_elements/CoffeAppBar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CoffeBeanInMachine extends StatefulWidget {
   const CoffeBeanInMachine({super.key});
@@ -12,39 +13,84 @@ class CoffeBeanInMachine extends StatefulWidget {
 }
 
 class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
-  final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
-  late final Stream<QuerySnapshot> beanStream = db_provider.getDBStream();
-
   double beanRating = 0; // Default bean rating
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the provider data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CoffeBeanDBProvider>().initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CoffeAppBar(appBarTitle: 'Current Coffe',),
-      body: StreamBuilder(
-        stream: beanStream,
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          // Named boolean expressions for readability
-          bool docsHasData = snapshot.hasData;
-          bool docsIsNotEmpty = snapshot.data != null && snapshot.data!.docs.isNotEmpty;
-          bool docsIsLoading = snapshot.connectionState == ConnectionState.waiting;
-
-          // Return a widget based on the state of the stream
-          if (docsIsLoading) { // If the stream is loading, then show a loading indicator
+      appBar: CoffeAppBar(appBarTitle: 'Current Coffee'),
+      body: Consumer<CoffeBeanDBProvider>(
+        builder: (context, provider, child) {
+          // Handle loading state
+          if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (!docsHasData || !docsIsNotEmpty) { // If the stream has no data, then show a message
-            return const Center(
-              child: Text('Error fetching current bean in machine'),
+          }
+
+          // Handle error state
+          if (provider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${provider.error}',
+                    style: TextStyle(color: Colors.red[300]),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      provider.clearError();
+                      provider.initialize();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
             );
-          } else {
-            // Get the document from the snapshot
-            DocumentSnapshot document = snapshot.data!.docs.firstWhere((element) => (element.data() as Map<String, dynamic>)['is_in_machine'] == true);
+          }
 
-            // Create a CoffeeBeanType from the data
-            CoffeBeanType currentBean = CoffeBeanType.fromJson(document.data() as Map<String, dynamic>, document.id);
+          // Get current coffee bean
+          CoffeBeanType? currentBean = provider.currentCoffeeBean;
 
-            // If all the other checks are false, then the stream is ready to be displayed
-            return Column(
+          // Handle case where no bean is in machine
+          if (currentBean == null) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.coffee_maker_outlined, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'No coffee bean in machine',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Add a coffee bean from the coffee list',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
+
+          }
+
+          // Display the current coffee bean
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
                 const SizedBox(height: 20),
                 const Icon(
@@ -53,68 +99,105 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                   color: Colors.brown,
                 ),
                 const SizedBox(height: 20),
-                Flexible(
-                  child: Text(
-                    currentBean.beanMaker,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                Text(
+                  currentBean.beanMaker,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
-                Flexible(
-                  child: Text(
-                    currentBean.beanType,
-                    style: const TextStyle(fontSize: 24),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  currentBean.beanType,
+                  style: const TextStyle(fontSize: 20),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 16),
+                if (currentBean.beanRating.isNotEmpty) ...[
+                  Text(
+                    'Average Rating: ${currentBean.calculateMeanRating().toStringAsFixed(1)} ⭐',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    'Total Ratings: ${currentBean.beanRating.length}',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                const SizedBox(height: 20),
+                const Text(
+                  'Rate this coffee:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 16),
                 Slider(
                   value: beanRating,
                   min: 0.0,
                   max: 5.0,
-                  divisions: 10,
-                  label: beanRating.toString(),
+                  divisions: 5,
+                  label: beanRating == 0 ? 'Select rating' : '${beanRating.toInt()} ⭐',
                   onChanged: (value) {
                     setState(() {
                       beanRating = value;
                     });
                   },
                 ),
-                const SizedBox(height: 50),
-                ElevatedButton(
-                  onPressed: () {
-                    // Boolean expression for readability
-                    bool beanRatingIsZero = beanRating == 0;
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: provider.isLoading ? null : () async {
+                      // Boolean expression for readability
+                      bool beanRatingIsZero = beanRating == 0;
 
-                    // If the bean rating is zero, then show a snackbar
-                    if (beanRatingIsZero) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please select a rating greater than 0'),
-                          duration: Duration(seconds: 5),
-                        ),
-                      );
-                    } else {
-                    // Update the bean in the database
-                    db_provider.addRatingsToCoffeBeanType(currentBean.id, beanRating.toInt());
-                    // Reset the bean ratingr
-                    setState(() {
-                      beanRating = 0;
-                    });
-                    // Show a snackbarss
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Rating added to bean: ${currentBean.beanMaker} - ${currentBean.beanType}'),
-                        duration: const Duration(seconds: 5),
-                      ),
-                    );
-                    }
-                  },
-                  child: const Text('Submit Rating'),
+                      // If the bean rating is zero, then show a snackbar
+                      if (beanRatingIsZero) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please select a rating greater than 0'),
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      } else {
+                        try {
+                          // Update the bean in the database
+                          await provider.addRatingsToCoffeBeanType(currentBean.id, beanRating.toInt());
+                          
+                          // Reset the bean rating
+                          setState(() {
+                            beanRating = 0;
+                          });
+                          
+                          // Show success snackbar
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Rating ${beanRating.toInt()} ⭐ added to ${currentBean.beanMaker} - ${currentBean.beanType}'),
+                                duration: const Duration(seconds: 3),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to add rating: $e'),
+                                duration: const Duration(seconds: 3),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Submit Rating', style: TextStyle(fontSize: 16)),
+                  ),
                 ),
               ],
-            );
-          }
+            ),
+          );
         },
       ),
     );
