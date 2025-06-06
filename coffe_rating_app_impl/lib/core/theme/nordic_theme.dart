@@ -135,6 +135,9 @@ class NordicBorderRadius {
   static const double xlarge = 20.0;
   static const double card = 12.0;
   static const double button = 12.0;
+  static const double popup = 16.0;     // For popups and modals
+  static const double rating = 12.0;    // For rating buttons
+  static const double chip = 20.0;      // For flavor note chips
 }
 
 class NordicTheme {

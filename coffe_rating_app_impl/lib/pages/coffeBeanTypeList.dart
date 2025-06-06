@@ -147,35 +147,12 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(NordicSpacing.md),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: NordicColors.textPrimary,
-                size: 24,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              'My Roasts',
-              style: NordicTypography.titleLarge.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(width: 40), // Balance for centering
-        ],
+      child: Text(
+        'My Roasts',
+        style: NordicTypography.titleLarge.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }

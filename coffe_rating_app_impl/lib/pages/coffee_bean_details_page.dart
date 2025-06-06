@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
 
 class CoffeeBeanDetailsPage extends StatefulWidget {
   final CoffeBeanType bean;
@@ -670,16 +671,22 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
     );
   }
 
-  void _showRatingDialog() {
-    // Navigate to rating dialog or show rating widget
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Rating feature coming soon!'),
-        backgroundColor: NordicColors.caramel,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(NordicSpacing.md),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+  void _showRatingDialog() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: CoffeeRatingPopup(
+          bean: widget.bean,
+          isModal: true,
+          onRatingSubmitted: () {
+            // Refresh the page to show updated ratings
+            setState(() {});
+          },
         ),
       ),
     );

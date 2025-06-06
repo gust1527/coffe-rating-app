@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,7 +14,6 @@ class CoffeBeanInMachine extends StatefulWidget {
 }
 
 class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
-  double beanRating = 0; // Default bean rating
 
   @override
   void initState() {
@@ -261,7 +261,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 ),
                 const SizedBox(height: NordicSpacing.xxl),
                 
-                // Rating section
+                // Action Buttons
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(NordicSpacing.xl),
@@ -273,140 +273,27 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                   child: Column(
                     children: [
                       Text(
-                        'Rate this Coffee',
+                        'Rate Your Experience',
                         style: NordicTypography.titleLarge,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: NordicSpacing.sm),
                       Text(
-                        'Help other coffee lovers by sharing your experience',
+                        'Share your thoughts on this coffee',
                         style: NordicTypography.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: NordicSpacing.lg),
+                      const SizedBox(height: NordicSpacing.xl),
                       
-                      // Star rating display
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(5, (index) {
-                          return Icon(
-                            index < beanRating.toInt() ? Icons.star : Icons.star_border,
-                            color: NordicColors.ratingGold,
-                            size: 32,
-                          );
-                        }),
-                      ),
-                      
-                      const SizedBox(height: NordicSpacing.md),
-                      
-                      // Slider
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 6,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-                        ),
-                        child: Slider(
-                          value: beanRating,
-                          min: 0.0,
-                          max: 5.0,
-                          divisions: 5,
-                          label: beanRating == 0 ? 'Select rating' : '${beanRating.toInt()} ⭐',
-                          onChanged: (value) {
-                            setState(() {
-                              beanRating = value;
-                            });
-                          },
-                        ),
-                      ),
-                      
-                      const SizedBox(height: NordicSpacing.lg),
-                      
-                      // Submit button
+                      // Rate This Coffee button
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: provider.isLoading ? null : () async {
-                      // Boolean expression for readability
-                      bool beanRatingIsZero = beanRating == 0;
-
-                      // If the bean rating is zero, then show a snackbar
-                      if (beanRatingIsZero) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Please select a rating greater than 0',
-                              style: NordicTypography.bodyMedium.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: NordicColors.warning,
-                            duration: const Duration(seconds: 3),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                            ),
-                          ),
-                        );
-                      } else {
-                        try {
-                          // Update the bean in the database
-                          await provider.addRatingsToCoffeBeanType(currentBean.id, beanRating.toInt());
-                          
-                          // Show success snackbar
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Rating ${beanRating.toInt()} ⭐ added to ${currentBean.beanMaker} - ${currentBean.beanType}',
-                                  style: NordicTypography.bodyMedium.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                backgroundColor: NordicColors.success,
-                                duration: const Duration(seconds: 3),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                                ),
-                              ),
-                            );
-                          
-                          // Reset the bean rating
-                          setState(() {
-                            beanRating = 0;
-                          });
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Failed to add rating: $e',
-                                  style: NordicTypography.bodyMedium.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                backgroundColor: NordicColors.error,
-                                duration: const Duration(seconds: 3),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    },
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showRatingPopup(currentBean),
+                          icon: const Icon(Icons.star_outline),
+                          label: const Text('Rate This Coffee'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: NordicSpacing.lg),
-                          ),
-                          child: Text(
-                            'Submit Rating',
-                            style: NordicTypography.labelLarge.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
                           ),
                         ),
                       ),
@@ -417,6 +304,27 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showRatingPopup(CoffeBeanType bean) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: CoffeeRatingPopup(
+          bean: bean,
+          isModal: true,
+          onRatingSubmitted: () {
+            // Refresh the page to show updated ratings
+            setState(() {});
+          },
+        ),
       ),
     );
   }
