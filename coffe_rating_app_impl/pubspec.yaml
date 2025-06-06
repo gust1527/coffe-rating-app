@@ -53,6 +53,9 @@ dependencies:
   # PocketBase
   pocketbase: ^0.18.0
   
+  # Persistence
+  shared_preferences: ^2.2.2
+  
   # Navigation
   go_router: ^14.2.7
   

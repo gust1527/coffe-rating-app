@@ -1,5 +1,6 @@
 import 'package:coffe_rating_app_impl/firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
 import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
@@ -32,6 +33,15 @@ void main() async {
 
   // Initialize the database
   await coffeeBeanFactory.initializeDatabase();
+  
+  // Try to restore authentication state
+  try {
+    await coffeeBeanFactory.authStrategy.loginWithToken();
+  } catch (e) {
+    if (kDebugMode) {
+      print('Failed to restore auth state: $e');
+    }
+  }
   
   runApp(const App());
 }

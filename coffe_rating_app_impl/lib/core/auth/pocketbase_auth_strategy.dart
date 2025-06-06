@@ -4,6 +4,18 @@ import 'package:coffe_rating_app_impl/domain/entities/standard_user.dart';
 import 'package:coffe_rating_app_impl/core/clients/pocketbase_client.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Custom exception for authentication operations
+class AuthException implements Exception {
+  final String message;
+  final dynamic originalError;
+
+  AuthException(this.message, [this.originalError]);
+
+  @override
+  String toString() => 'AuthException: $message${originalError != null ? '\nOriginal error: $originalError' : ''}';
+}
 
 /// PocketBase authentication strategy implementation
 class PocketBaseAuthStrategy extends AuthStrategy {
@@ -11,6 +23,9 @@ class PocketBaseAuthStrategy extends AuthStrategy {
   User? _currentUser;
   bool _isLoading = false;
   String? _error;
+  
+  static const String _tokenKey = 'pocketbase_auth_token';
+  static const String _modelKey = 'pocketbase_auth_model';
 
   PocketBaseAuthStrategy() {
     _pb = PocketBaseClient.shared.instance;
@@ -18,7 +33,7 @@ class PocketBaseAuthStrategy extends AuthStrategy {
   }
 
   @override
-  bool get isAuthenticated => _pb.authStore.isValid && _currentUser != null;
+  bool get isAuthenticated => _pb.authStore.isValid;
 
   @override
   String? get currentUserId => _pb.authStore.model?.id;
@@ -58,16 +73,23 @@ class PocketBaseAuthStrategy extends AuthStrategy {
     try {
       final authData = await _pb.collection('users').authWithPassword(email, password);
       
-      if (authData.record == null) {
-        throw Exception('Authentication failed: No user record returned');
+      if (!_pb.authStore.isValid || authData.record == null) {
+        throw AuthException('Authentication failed: Invalid auth store state');
       }
 
       _currentUser = _createUserFromRecord(authData.record!);
+
+      // Save auth token and model
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tokenKey, _pb.authStore.token);
+      await prefs.setString(_modelKey, authData.record!.id);
+
       notifyListeners();
       return _currentUser!;
     } catch (e) {
+      _pb.authStore.clear();
       _setError('Authentication failed: ${e.toString()}');
-      rethrow;
+      throw AuthException('Failed to authenticate user', e);
     } finally {
       _setLoading(false);
     }
@@ -79,22 +101,69 @@ class PocketBaseAuthStrategy extends AuthStrategy {
     _clearError();
 
     try {
-      // PocketBase automatically handles token validation
-      if (_pb.authStore.isValid && _pb.authStore.model != null) {
-        // Refresh the auth state to ensure token is still valid
-        await _pb.collection('users').authRefresh();
-        _currentUser = _createUserFromRecord(_pb.authStore.model!);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(_tokenKey);
+      final modelId = prefs.getString(_modelKey);
+
+      if (token == null || modelId == null) {
+        return false;
+      }
+
+      // Create a basic record model with the saved ID
+      final recordModel = RecordModel.fromJson({
+        'id': modelId,
+        'collectionId': '_pb_users_auth_',
+        'collectionName': 'users',
+        'created': DateTime.now().toIso8601String(),
+        'updated': DateTime.now().toIso8601String(),
+        'expand': <String, dynamic>{},
+        'data': <String, dynamic>{},
+      });
+
+      // Set the token and basic model in the auth store
+      _pb.authStore.save(token, recordModel);
+      
+      // Verify if the token is still valid
+      if (!_pb.authStore.isValid) {
+        await _clearAuth(prefs);
+        return false;
+      }
+
+      try {
+        // Try to refresh the user data
+        final record = await _pb.collection('users').getOne(modelId);
+        _pb.authStore.save(token, record); // Update with full record
+        
+        _currentUser = _createUserFromRecord(record);
+
+        notifyListeners();
+        return true;
+      } catch (e) {
+        // If we get a 404, the user doesn't exist anymore
+        if (e.toString().contains('404')) {
+          await _clearAuth(prefs);
+          return false;
+        }
+        // For other errors, we can still proceed with the basic record
+        _currentUser = _createUserFromRecord(recordModel);
         notifyListeners();
         return true;
       }
-      return false;
     } catch (e) {
-      _setError('Token validation failed: ${e.toString()}');
-      _pb.authStore.clear();
+      // Clear invalid token
+      final prefs = await SharedPreferences.getInstance();
+      await _clearAuth(prefs);
       return false;
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<void> _clearAuth(SharedPreferences prefs) async {
+    _pb.authStore.clear();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_modelKey);
+    _currentUser = null;
   }
 
   @override
@@ -105,6 +174,11 @@ class PocketBaseAuthStrategy extends AuthStrategy {
     try {
       _pb.authStore.clear();
       _currentUser = null;
+      
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_tokenKey);
+      await prefs.remove(_modelKey);
+      
       notifyListeners();
     } catch (e) {
       _setError('Logout failed: ${e.toString()}');
