@@ -65,32 +65,28 @@ class HorizontalCoffeeList extends StatelessWidget {
                       PointerDeviceKind.touch,
                       PointerDeviceKind.mouse,
                     },
-                    scrollbars: false,
                   ),
-                  child: Scrollbar(
-                    thumbVisibility: false,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: NordicSpacing.md),
-                      itemCount: coffees.length,
-                      itemBuilder: (context, index) {
-                        final coffee = coffees[index];
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            right: index < coffees.length - 1 ? NordicSpacing.md : 0,
-                          ),
-                          child: CoffeeCard(
-                            name: coffee.name,
-                            rating: coffee.rating,
-                            roastLevel: coffee.roastLevel,
-                            imageUrl: coffee.imageUrl,
-                            isInMachine: coffee.isInMachine,
-                            onTap: coffee.onTap,
-                          ),
-                        );
-                      },
-                    ),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: NordicSpacing.md),
+                    itemCount: coffees.length,
+                    itemBuilder: (context, index) {
+                      final coffee = coffees[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          right: index < coffees.length - 1 ? NordicSpacing.md : 0,
+                        ),
+                        child: CoffeeCard(
+                          name: coffee.name,
+                          rating: coffee.rating,
+                          roastLevel: coffee.roastLevel,
+                          imageUrl: coffee.imageUrl,
+                          isInMachine: coffee.isInMachine,
+                          onTap: coffee.onTap,
+                        ),
+                      );
+                    },
                   ),
                 ),
         ),
