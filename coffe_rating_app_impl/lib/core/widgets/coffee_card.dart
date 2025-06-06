@@ -61,22 +61,24 @@ class CoffeeCard extends StatelessWidget {
             ),
             
             // Coffee details
-            Padding(
-              padding: const EdgeInsets.all(NordicSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Coffee name
-                  Text(
-                    name,
-                    style: NordicTypography.titleMedium.copyWith(
-                      fontWeight: FontWeight.w500,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(NordicSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Coffee name
+                    Text(
+                      name,
+                      style: NordicTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  
-                  const SizedBox(height: NordicSpacing.xs),
+                    
+                    const SizedBox(height: NordicSpacing.xs),
                   
                   // Rating and roast level
                   Row(
@@ -136,7 +138,8 @@ class CoffeeCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                ],
+                  ],
+                ),
               ),
             ),
           ],

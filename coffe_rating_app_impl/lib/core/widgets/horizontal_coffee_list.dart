@@ -55,7 +55,7 @@ class HorizontalCoffeeList extends StatelessWidget {
         
         // Horizontal scrolling list
         SizedBox(
-          height: 260,
+          height: 280,
           child: coffees.isEmpty
               ? _buildEmptyState()
               : ListView.separated(
