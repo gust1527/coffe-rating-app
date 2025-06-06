@@ -1,9 +1,9 @@
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:flutter/material.dart';
 
 class SetBeanInMachine extends StatelessWidget {
-  final CoffeBeanDBProvider db_provider = CoffeBeanDBProvider();
+  final FirebaseDBStrategy db_provider = FirebaseDBStrategy();
   final CoffeBeanType bean;
 
   SetBeanInMachine({super.key, required this.bean});

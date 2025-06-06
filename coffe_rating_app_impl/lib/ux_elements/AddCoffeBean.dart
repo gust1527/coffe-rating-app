@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 
 class AddCoffeBean extends StatefulWidget {
@@ -34,7 +34,7 @@ class _AddCoffeBeanState extends State<AddCoffeBean> {
     });
 
     try {
-      final provider = Provider.of<CoffeBeanDBProvider>(context, listen: false);
+      final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
       
       await provider.addCoffeBeanType(
         _beanMakerController.text.trim(),

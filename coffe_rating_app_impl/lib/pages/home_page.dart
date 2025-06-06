@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/widgets/hero_section.dart';
 import 'package:coffe_rating_app_impl/core/widgets/horizontal_coffee_list.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
+import 'package:coffe_rating_app_impl/core/auth/auth_strategy.dart';
+import 'package:coffe_rating_app_impl/pages/profile_page.dart';
 
 class NordicHomePage extends StatelessWidget {
   const NordicHomePage({super.key});
@@ -42,7 +44,7 @@ class NordicHomePage extends StatelessWidget {
               const SizedBox(height: NordicSpacing.xxl),
               
               // Your Rated Roasts
-              Consumer<CoffeBeanDBProvider>(
+              Consumer<FirebaseDBStrategy>(
                 builder: (context, provider, child) {
                   final ratedCoffees = _getRatedCoffees(provider.coffeeBeans);
                   
@@ -50,7 +52,7 @@ class NordicHomePage extends StatelessWidget {
                     title: 'Your Rated Roasts',
                     coffees: ratedCoffees,
                     onSeeAll: () {
-                      // Navigate to full list using the navigation bar
+                      // Navigate to full list using the navigation 
                       
                     },
                   );
@@ -98,17 +100,25 @@ class NordicHomePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
             ),
             child: IconButton(
-              onPressed: () {
-                // Search functionality
-              },
+              onPressed: () => _navigateToProfile(context),
               icon: const Icon(
-                Icons.search,
+                Icons.person,
                 color: NordicColors.textPrimary,
                 size: 24,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+
+
+  void _navigateToProfile(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ProfilePage(),
       ),
     );
   }

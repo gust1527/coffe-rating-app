@@ -1,14 +1,21 @@
 import 'package:coffe_rating_app_impl/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/pages/home_page.dart';
 import 'package:coffe_rating_app_impl/pages/machine_tab.dart';
 import 'package:provider/provider.dart';
+import 'package:coffe_rating_app_impl/core/auth/auth_strategy.dart';
+import 'package:coffe_rating_app_impl/core/factory/coffee_bean_factory.dart';
+import 'package:coffe_rating_app_impl/core/enums.dart';
+import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProviderInterface.dart';
 
 // Import the firebase_core plugin
 import 'package:firebase_core/firebase_core.dart';
+
+// Global factory instance
+late CoffeeBeanFactory coffeeBeanFactory;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +23,15 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize the factory with PocketBase for auth and Firebase for beans
+  coffeeBeanFactory = CoffeeBeanFactory(
+    BackendType.pocketBase,
+    isProduction: false, // Set to true for production
+  );
+
+  // Initialize the database
+  await coffeeBeanFactory.initializeDatabase();
   
   runApp(const App());
 }
@@ -46,8 +62,11 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<CoffeBeanDBProvider>(
-          create: (_) => CoffeBeanDBProvider()..initialize(),
+        ChangeNotifierProvider<FirebaseDBStrategy>(
+          create: (_) => coffeeBeanFactory.dbStrategy as FirebaseDBStrategy,
+        ),
+        ChangeNotifierProvider<AuthStrategy>(
+          create: (_) => coffeeBeanFactory.authStrategy,
         ),
       ],
       child: MaterialApp(

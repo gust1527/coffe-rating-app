@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 
 /// Nordic-styled coffee rating popup that matches the design guidelines
 /// Can be used both as a modal popup and as a standalone page component
@@ -55,7 +55,7 @@ class _CoffeeRatingPopupState extends State<CoffeeRatingPopup> {
     });
 
     try {
-      final provider = Provider.of<CoffeBeanDBProvider>(context, listen: false);
+      final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
       await provider.addRatingsToCoffeBeanType(widget.bean.id, _selectedRating!);
 
       // Store flavor notes and review locally for now (fallback until database support is added)

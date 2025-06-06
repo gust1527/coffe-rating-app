@@ -50,6 +50,9 @@ dependencies:
   cloud_firestore: ^5.1.0
   firebase_auth: ^5.1.2
   
+  # PocketBase
+  pocketbase: ^0.18.0
+  
   # Navigation
   go_router: ^14.2.7
   

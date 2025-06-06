@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/pages/coffee_bean_details_page.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 
@@ -9,7 +9,7 @@ class MachineTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CoffeBeanDBProvider>(
+          return Consumer<FirebaseDBStrategy>(
       builder: (context, provider, child) {
         if (provider.isLoading) {
           return const Center(
@@ -54,7 +54,7 @@ class MachineTab extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState(CoffeBeanDBProvider provider) {
+  Widget _buildErrorState(FirebaseDBStrategy provider) {
     return Scaffold(
       backgroundColor: NordicColors.background,
       body: SafeArea(

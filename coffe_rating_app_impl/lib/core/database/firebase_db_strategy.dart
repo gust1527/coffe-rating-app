@@ -3,9 +3,9 @@ import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProviderInterface.dar
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:flutter/foundation.dart';
 
-/// Coffee Bean Database Provider following clean architecture principles
-/// This provider manages coffee bean data and machine state
-class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInterface {
+/// Firebase Database Strategy for coffee bean management
+/// This strategy manages coffee bean data and machine state using Firebase Firestore
+class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInterface {
   // Get Firestore instance via dependency injection
   final FirebaseFirestore _db;
   
@@ -16,7 +16,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   CoffeBeanType? _currentCoffeeBean;
 
   // Constructor
-  CoffeBeanDBProvider({FirebaseFirestore? firestore}) 
+  FirebaseDBStrategy({FirebaseFirestore? firestore}) 
     : _db = firestore ?? FirebaseFirestore.instance;
   
   // Getters for state

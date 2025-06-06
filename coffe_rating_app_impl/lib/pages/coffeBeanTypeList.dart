@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/widgets/nordic_coffee_bean_list_item.dart';
@@ -34,7 +34,7 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
     super.initState();
     // Initialize the provider if needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CoffeBeanDBProvider>(context, listen: false).initialize();
+      Provider.of<FirebaseDBStrategy>(context, listen: false).initialize();
     });
   }
 
@@ -77,7 +77,7 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
             
             // Coffee beans list
             Expanded(
-              child: Consumer<CoffeBeanDBProvider>(
+              child: Consumer<FirebaseDBStrategy>(
                 builder: (context, provider, child) {
                   if (provider.isLoading) {
                     return const Center(

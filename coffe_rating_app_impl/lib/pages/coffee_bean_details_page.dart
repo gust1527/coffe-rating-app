@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
 
 class CoffeeBeanDetailsPage extends StatefulWidget {
@@ -765,7 +765,7 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
 
   void _setInMachine() async {
     try {
-      final provider = Provider.of<CoffeBeanDBProvider>(context, listen: false);
+      final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
       await provider.setCoffeBeanToMachine(widget.bean.id);
       
       if (mounted) {

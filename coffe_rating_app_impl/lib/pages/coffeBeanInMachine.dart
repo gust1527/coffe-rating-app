@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
@@ -20,7 +20,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
     super.initState();
     // Initialize the provider data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CoffeBeanDBProvider>().initialize();
+      context.read<FirebaseDBStrategy>().initialize();
     });
   }
 
@@ -39,7 +39,7 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
       ),
-      body: Consumer<CoffeBeanDBProvider>(
+      body: Consumer<FirebaseDBStrategy>(
         builder: (context, provider, child) {
           // Handle loading state
           if (provider.isLoading) {
