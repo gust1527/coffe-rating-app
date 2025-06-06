@@ -29,11 +29,26 @@ class MachineTab extends StatelessWidget {
           return _buildEmptyMachineState();
         }
 
-        // Show the coffee bean details page for the current machine bean
-        return CoffeeBeanDetailsPage(
-          bean: currentBean,
-          isCommunityBean: false,
-          showBackButton: false,
+        // Show the coffee bean details page for the current machine bean with header
+        return Scaffold(
+          backgroundColor: NordicColors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                _buildHeader(),
+                
+                // Coffee bean details (without the back button)
+                Expanded(
+                  child: CoffeeBeanDetailsPage(
+                    bean: currentBean,
+                    isCommunityBean: false,
+                    showBackButton: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -43,12 +58,21 @@ class MachineTab extends StatelessWidget {
     return Scaffold(
       backgroundColor: NordicColors.background,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(NordicSpacing.xl),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(),
+            
+            const SizedBox(height: NordicSpacing.lg),
+            
+            // Error state content
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(NordicSpacing.xl),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                 Container(
                   width: 80,
                   height: 80,
@@ -84,9 +108,12 @@ class MachineTab extends StatelessWidget {
                   },
                   child: const Text('Try Again'),
                 ),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -96,12 +123,21 @@ class MachineTab extends StatelessWidget {
     return Scaffold(
       backgroundColor: NordicColors.background,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(NordicSpacing.xl),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(),
+            
+            const SizedBox(height: NordicSpacing.lg),
+            
+            // Empty state content
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(NordicSpacing.xl),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                 Container(
                   width: 120,
                   height: 120,
@@ -170,10 +206,49 @@ class MachineTab extends StatelessWidget {
                     ],
                   ),
                 ),
-              ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(NordicSpacing.md),
+      child: Row(
+        children: [
+          const SizedBox(width: 48), // Space for symmetry
+          Expanded(
+            child: Text(
+              'Machine',
+              style: NordicTypography.titleLarge,
+              textAlign: TextAlign.center,
             ),
           ),
-        ),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+            ),
+            child: IconButton(
+              onPressed: () {
+                // Could add machine settings or status
+              },
+              icon: const Icon(
+                Icons.coffee_maker,
+                color: NordicColors.textPrimary,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

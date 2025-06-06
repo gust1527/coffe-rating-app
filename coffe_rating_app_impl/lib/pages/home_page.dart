@@ -50,7 +50,8 @@ class NordicHomePage extends StatelessWidget {
                     title: 'Your Rated Roasts',
                     coffees: ratedCoffees,
                     onSeeAll: () {
-                      // Navigate to full list
+                      // Navigate to full list using the navigation bar
+                      
                     },
                   );
                 },
@@ -68,6 +69,7 @@ class NordicHomePage extends StatelessWidget {
               ),
               
               const SizedBox(height: NordicSpacing.xxl),
+              
             ],
           ),
         ),

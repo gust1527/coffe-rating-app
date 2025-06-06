@@ -362,18 +362,15 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
   }
 
   Widget _buildRatingDistribution(int totalRatings) {
-    // Mock rating distribution - in a real app, this would be calculated from actual ratings
-    final distribution = [
-      {'stars': 5, 'count': (totalRatings * 0.5).round(), 'percentage': 50},
-      {'stars': 4, 'count': (totalRatings * 0.3).round(), 'percentage': 30},
-      {'stars': 3, 'count': (totalRatings * 0.1).round(), 'percentage': 10},
-      {'stars': 2, 'count': (totalRatings * 0.05).round(), 'percentage': 5},
-      {'stars': 1, 'count': (totalRatings * 0.05).round(), 'percentage': 5},
-    ];
+    // Calculate actual rating distribution from bean ratings
+    final distribution = _calculateRatingDistribution();
 
     return Column(
       children: distribution.map((item) {
-        final percentage = item['percentage'] as int;
+        final percentage = item['percentage'] as double;
+        final count = item['count'] as int;
+        final stars = item['stars'] as int;
+        
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(
@@ -381,7 +378,7 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
               SizedBox(
                 width: 20,
                 child: Text(
-                  '${item['stars']}',
+                  '$stars',
                   style: NordicTypography.bodyMedium,
                 ),
               ),
@@ -395,7 +392,7 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
                   ),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
-                    widthFactor: percentage / 100,
+                    widthFactor: percentage / 100.0,
                     child: Container(
                       decoration: BoxDecoration(
                         color: NordicColors.textPrimary,
@@ -409,7 +406,7 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
               SizedBox(
                 width: 40,
                 child: Text(
-                  '$percentage%',
+                  '${percentage.toStringAsFixed(0)}%',
                   style: NordicTypography.bodyMedium.copyWith(
                     color: NordicColors.textSecondary,
                   ),
@@ -421,6 +418,61 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
         );
       }).toList(),
     );
+  }
+
+  /// Calculate the actual rating distribution from the bean's ratings
+  /// Handles edge cases: no ratings, one rating, many ratings, and invalid ratings
+  List<Map<String, dynamic>> _calculateRatingDistribution() {
+    final ratings = widget.bean.beanRating;
+    
+    // Initialize distribution for all star levels (5 to 1)
+    final Map<int, int> ratingCounts = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+    
+    // Handle edge case: no ratings
+    if (ratings.isEmpty) {
+      return [5, 4, 3, 2, 1].map((stars) => {
+        'stars': stars,
+        'count': 0,
+        'percentage': 0.0,
+      }).toList();
+    }
+    
+    // Count only valid ratings (1-5)
+    for (final rating in ratings) {
+      if (rating >= 1 && rating <= 5) {
+        ratingCounts[rating] = (ratingCounts[rating] ?? 0) + 1;
+      }
+    }
+    
+    // Calculate total valid ratings for percentage calculation
+    final validRatingsTotal = ratingCounts.values.reduce((a, b) => a + b);
+    
+    // Handle case where all ratings were invalid
+    if (validRatingsTotal == 0) {
+      return [5, 4, 3, 2, 1].map((stars) => {
+        'stars': stars,
+        'count': 0,
+        'percentage': 0.0,
+      }).toList();
+    }
+    
+    // Calculate percentages and create distribution list
+    return [5, 4, 3, 2, 1].map((stars) {
+      final count = ratingCounts[stars] ?? 0;
+      final percentage = (count / validRatingsTotal) * 100.0;
+      
+      return {
+        'stars': stars,
+        'count': count,
+        'percentage': percentage,
+      };
+    }).toList();
   }
 
   Widget _buildReviewsSection() {
