@@ -1,5 +1,4 @@
 import 'package:coffe_rating_app_impl/firebase_options.dart';
-import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
 import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
@@ -32,8 +31,8 @@ class _AppState extends State<App> {
 
   final List<Widget> _pages = [
     const NordicHomePage(),
-    const CoffeBeanInMachine(),
-    const NordicCoffeBeanTypeList(),
+    const NordicCoffeBeanTypeList(showMachineActions: true),
+    const NordicCoffeBeanTypeList(showMachineActions: false),
   ];
 
   void _onTabTapped(int index) {
@@ -74,7 +73,7 @@ class _AppState extends State<App> {
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.coffee_outlined),
-                label: 'All Beans',
+                label: 'My Roasts',
               ),
             ],
           ),

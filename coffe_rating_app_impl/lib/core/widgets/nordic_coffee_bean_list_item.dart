@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/pages/coffee_bean_details_page.dart';
+import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
 
 class NordicCoffeBeanListItem extends StatelessWidget {
   final CoffeBeanType bean;
   final VoidCallback? onTap;
+  final bool showMachineActions;
 
   const NordicCoffeBeanListItem({
     super.key,
     required this.bean,
     this.onTap,
+    this.showMachineActions = false,
   });
 
   @override
@@ -104,42 +109,11 @@ class NordicCoffeBeanListItem extends StatelessWidget {
                   ),
                 ),
                 
-                // In machine indicator and arrow
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (bean.isInMachine)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: NordicSpacing.sm,
-                          vertical: NordicSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: NordicColors.caramel,
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.small),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.8),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          'In Machine',
-                          style: NordicTypography.labelMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    
-                    const SizedBox(height: NordicSpacing.xs),
-                    
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: NordicColors.textSecondary,
-                    ),
-                  ],
-                ),
+                // Machine actions or navigation
+                if (showMachineActions)
+                  _buildMachineActions(context)
+                else
+                  _buildNavigationIndicator(),
               ],
             ),
           ),
@@ -212,5 +186,168 @@ class NordicCoffeBeanListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildNavigationIndicator() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (bean.isInMachine)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: NordicSpacing.sm,
+              vertical: NordicSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: NordicColors.caramel,
+              borderRadius: BorderRadius.circular(NordicBorderRadius.small),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.8),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              'In Machine',
+              style: NordicTypography.labelMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        
+        const SizedBox(height: NordicSpacing.xs),
+        
+        Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: NordicColors.textSecondary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMachineActions(BuildContext context) {
+    if (bean.isInMachine) {
+      // Show rate button for the current machine bean
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: NordicSpacing.sm,
+              vertical: NordicSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: NordicColors.caramel,
+              borderRadius: BorderRadius.circular(NordicBorderRadius.small),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.8),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              'In Machine',
+              style: NordicTypography.labelMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: NordicSpacing.sm),
+          IconButton(
+            onPressed: () => _showRatingPopup(context),
+            icon: const Icon(Icons.star_outline),
+            color: NordicColors.caramel,
+            tooltip: 'Rate this coffee',
+          ),
+        ],
+      );
+    } else {
+      // Show set in machine button
+      return ElevatedButton.icon(
+        onPressed: () => _setInMachine(context),
+        icon: const Icon(Icons.coffee_maker_outlined, size: 16),
+        label: const Text('Set in Machine'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: NordicColors.surface,
+          foregroundColor: NordicColors.textPrimary,
+          elevation: 0,
+          minimumSize: const Size(120, 32),
+          textStyle: NordicTypography.labelMedium,
+        ),
+      );
+    }
+  }
+
+  void _showRatingPopup(BuildContext context) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: NordicColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(NordicBorderRadius.popup),
+              topRight: Radius.circular(NordicBorderRadius.popup),
+            ),
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: CoffeeRatingPopup(
+                bean: bean,
+                isModal: true,
+                onRatingSubmitted: () {
+                  // Note: In a StatelessWidget, we can't call setState
+                  // The parent will need to handle state updates
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setInMachine(BuildContext context) async {
+    try {
+      final provider = Provider.of<CoffeBeanDBProvider>(context, listen: false);
+      await provider.setCoffeBeanToMachine(bean.id);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${bean.beanType} set in machine!'),
+            backgroundColor: NordicColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: NordicColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+            ),
+          ),
+        );
+      }
+    }
   }
 } 
