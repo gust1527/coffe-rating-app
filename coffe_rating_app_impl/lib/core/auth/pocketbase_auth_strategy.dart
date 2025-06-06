@@ -126,19 +126,12 @@ class PocketBaseAuthStrategy extends AuthStrategy {
     _clearError();
 
     try {
-      // Check if username is available first
-      final isAvailable = await isUsernameAvailable(username);
-      if (!isAvailable) {
-        throw Exception('Username is already taken');
-      }
 
       // Create the user record
       final body = <String, dynamic>{
         'email': email,
         'name': name,
-        'username': username,
         'password': password,
-        'passwordConfirm': password,
         'location': location,
         'beans_rated': 0,
         'top_brews': 0,

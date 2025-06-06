@@ -4,6 +4,8 @@ import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/auth/auth_strategy.dart';
 import 'package:coffe_rating_app_impl/domain/entities/standard_user.dart';
 import 'package:coffe_rating_app_impl/domain/entities/badge.dart' as coffee_badges;
+import 'package:coffe_rating_app_impl/core/widgets/auth/login_form.dart';
+import 'package:coffe_rating_app_impl/core/widgets/auth/signup_form.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -41,22 +43,136 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildNotLoggedInState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_outline,
-            size: 80,
-            color: NordicColors.textSecondary,
+    return Column(
+      children: [
+        // Header
+        _buildHeader(),
+        
+        // Welcome content
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(NordicSpacing.lg),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.coffee,
+                    size: 80,
+                    color: NordicColors.caramel,
+                  ),
+                  const SizedBox(height: NordicSpacing.lg),
+                  Text(
+                    'Welcome to Nordic Bean',
+                    style: NordicTypography.headlineMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: NordicSpacing.md),
+                  Text(
+                    'Join our community of coffee enthusiasts',
+                    style: NordicTypography.bodyLarge.copyWith(
+                      color: NordicColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: NordicSpacing.xl),
+                  
+                  // Login button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => _showLoginForm(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: NordicColors.caramel,
+                        foregroundColor: NordicColors.textPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(NordicBorderRadius.button),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Log In',
+                        style: NordicTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: NordicSpacing.md),
+                  
+                  // Sign up button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () => _showSignupForm(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: NordicColors.textPrimary,
+                        side: const BorderSide(
+                          color: NordicColors.caramel,
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(NordicBorderRadius.button),
+                        ),
+                      ),
+                      child: Text(
+                        'Create Account',
+                        style: NordicTypography.labelLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          SizedBox(height: NordicSpacing.lg),
-          Text(
-            'Please log in to view your profile',
-            style: NordicTypography.titleLarge,
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  void _showLoginForm() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: LoginForm(
+          onClose: () => Navigator.of(context).pop(),
+          onSwitchToSignup: () {
+            Navigator.of(context).pop();
+            _showSignupForm();
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showSignupForm() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SignupForm(
+          onClose: () => Navigator.of(context).pop(),
+          onSwitchToLogin: () {
+            Navigator.of(context).pop();
+            _showLoginForm();
+          },
+        ),
       ),
     );
   }
