@@ -15,4 +15,7 @@ abstract class CoffeeBeanDBProviderInterface {
   Future<void> setCoffeBeanToMachine(String id);
 
   Future<void> updateCoffeBeanImage(String id, String imageUrl);
+
+  // Future flavor notes and review support (to be implemented when database schema is updated)
+  // Future<void> addReviewToCoffeBeanType(String id, int rating, String review, List<String> flavorNotes);
 }

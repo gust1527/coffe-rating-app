@@ -676,17 +676,34 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: CoffeeRatingPopup(
-          bean: widget.bean,
-          isModal: true,
-          onRatingSubmitted: () {
-            // Refresh the page to show updated ratings
-            setState(() {});
-          },
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: NordicColors.background,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(NordicBorderRadius.popup),
+              topRight: Radius.circular(NordicBorderRadius.popup),
+            ),
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: CoffeeRatingPopup(
+                bean: widget.bean,
+                isModal: true,
+                onRatingSubmitted: () {
+                  setState(() {});
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
