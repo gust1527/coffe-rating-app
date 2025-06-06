@@ -109,11 +109,8 @@ class NordicCoffeBeanListItem extends StatelessWidget {
                   ),
                 ),
                 
-                // Machine actions or navigation
-                if (showMachineActions)
-                  _buildMachineActions(context)
-                else
-                  _buildNavigationIndicator(),
+                // Navigation indicator
+                _buildNavigationIndicator(),
               ],
             ),
           ),

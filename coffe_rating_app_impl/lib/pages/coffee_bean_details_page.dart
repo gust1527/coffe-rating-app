@@ -8,11 +8,13 @@ import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
 class CoffeeBeanDetailsPage extends StatefulWidget {
   final CoffeBeanType bean;
   final bool isCommunityBean;
+  final bool showBackButton;
 
   const CoffeeBeanDetailsPage({
     super.key,
     required this.bean,
     this.isCommunityBean = false,
+    this.showBackButton = true,
   });
 
   @override
@@ -30,8 +32,8 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            _buildHeader(context),
+            // Header (only if showBackButton is true)
+            if (widget.showBackButton) _buildHeader(context),
             
             // Content
             Expanded(

@@ -20,12 +20,7 @@ enum SortOption {
 }
 
 class NordicCoffeBeanTypeList extends StatefulWidget {
-  final bool showMachineActions;
-  
-  const NordicCoffeBeanTypeList({
-    super.key,
-    this.showMachineActions = false,
-  });
+  const NordicCoffeBeanTypeList({super.key});
 
   @override
   State<NordicCoffeBeanTypeList> createState() => _NordicCoffeBeanTypeListState();
@@ -135,7 +130,6 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
                         padding: const EdgeInsets.only(bottom: NordicSpacing.xs),
                         child: NordicCoffeBeanListItem(
                           bean: bean,
-                          showMachineActions: widget.showMachineActions,
                         ),
                       );
                     },
@@ -154,7 +148,7 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
     return Container(
       padding: const EdgeInsets.all(NordicSpacing.md),
       child: Text(
-        widget.showMachineActions ? 'Coffee Machine' : 'My Roasts',
+        'My Roasts',
         style: NordicTypography.titleLarge.copyWith(
           fontWeight: FontWeight.bold,
         ),
