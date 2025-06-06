@@ -33,7 +33,7 @@ class _AppState extends State<App> {
   final List<Widget> _pages = [
     const NordicHomePage(),
     const CoffeBeanInMachine(),
-    const CoffeBeanTypeList(),
+    const NordicCoffeBeanTypeList(),
   ];
 
   void _onTabTapped(int index) {
