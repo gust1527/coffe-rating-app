@@ -28,6 +28,10 @@ class CoffeeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: NordicColors.background,
           borderRadius: BorderRadius.circular(NordicBorderRadius.card),
+          border: Border.all(
+            color: NordicColors.surface,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
