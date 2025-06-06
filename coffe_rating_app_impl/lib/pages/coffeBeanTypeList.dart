@@ -337,7 +337,7 @@ class NordicCoffeBeanListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Coffee bean image placeholder
+            // Coffee bean image with fallback
             Container(
               width: 56,
               height: 56,
@@ -352,10 +352,38 @@ class NordicCoffeBeanListItem extends StatelessWidget {
                   ],
                 ),
               ),
-              child: const Icon(
-                Icons.coffee,
-                color: NordicColors.textSecondary,
-                size: 28,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+                child: bean.hasImage
+                  ? Image.network(
+                      bean.imageUrl!,
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.coffee,
+                        color: NordicColors.textSecondary,
+                        size: 28,
+                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(NordicColors.caramel),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : const Icon(
+                      Icons.coffee,
+                      color: NordicColors.textSecondary,
+                      size: 28,
+                    ),
               ),
             ),
             

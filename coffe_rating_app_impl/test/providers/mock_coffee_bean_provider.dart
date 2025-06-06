@@ -17,7 +17,7 @@ class MockCoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProvide
   CoffeBeanType? get currentCoffeeBean => _currentCoffeeBean;
 
   @override
-  Future<String> addCoffeBeanType(String beanMaker, String beanType) async {
+  Future<String> addCoffeBeanType(String beanMaker, String beanType, {String? imageUrl}) async {
     if (beanMaker.trim().isEmpty || beanType.trim().isEmpty) {
       throw ArgumentError('Bean maker and bean type cannot be empty');
     }
@@ -53,6 +53,11 @@ class MockCoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProvide
 
   @override
   Future<void> setCoffeBeanToMachine(String id) async {
+    // Simulate success
+  }
+
+  @override
+  Future<void> updateCoffeBeanImage(String id, String imageUrl) async {
     // Simulate success
   }
 

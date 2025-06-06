@@ -162,6 +162,7 @@ class CoffeeCard extends StatelessWidget {
   }
 
   Widget _buildCoffeeImage() {
+    // Check if we have a valid image URL
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return Image.network(
         imageUrl!,
@@ -173,6 +174,7 @@ class CoffeeCard extends StatelessWidget {
         },
       );
     }
+    // Fallback to placeholder if no image URL
     return _buildPlaceholderImage();
   }
 

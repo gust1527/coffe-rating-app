@@ -29,7 +29,7 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   static const String _collectionName = 'coffe_bean_types';
 
   @override
-  Future<String> addCoffeBeanType(String beanMaker, String beanType) async {
+  Future<String> addCoffeBeanType(String beanMaker, String beanType, {String? imageUrl}) async {
     if (beanMaker.trim().isEmpty || beanType.trim().isEmpty) {
       throw ArgumentError('Bean maker and bean type cannot be empty');
     }
@@ -47,6 +47,9 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
         'coffe_bean_type': beanType.trim(),
         'bean_rating': <int>[],
         'is_in_machine': true,
+        'image_url': imageUrl,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
       });
 
       // Update local state
@@ -231,5 +234,27 @@ class CoffeBeanDBProvider with ChangeNotifier implements CoffeeBeanDBProviderInt
   void clearError() {
     _clearError();
     notifyListeners();
+  }
+
+  @override
+  Future<void> updateCoffeBeanImage(String id, String imageUrl) async {
+    try {
+      _setLoading(true);
+      _clearError();
+
+      await _db.collection(_collectionName).doc(id).update({
+        'image_url': imageUrl,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+
+      // Update local state
+      await _refreshCoffeeBeans();
+      
+    } catch (e) {
+      _setError('Failed to update coffee bean image: $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
   }
 }
