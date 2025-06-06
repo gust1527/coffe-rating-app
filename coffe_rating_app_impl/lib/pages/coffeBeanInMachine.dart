@@ -161,11 +161,6 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                           // Update the bean in the database
                           await provider.addRatingsToCoffeBeanType(currentBean.id, beanRating.toInt());
                           
-                          // Reset the bean rating
-                          setState(() {
-                            beanRating = 0;
-                          });
-                          
                           // Show success snackbar
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -175,6 +170,11 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                                 backgroundColor: Colors.green,
                               ),
                             );
+                          
+                          // Reset the bean rating
+                          setState(() {
+                            beanRating = 0;
+                          });
                           }
                         } catch (e) {
                           if (mounted) {
