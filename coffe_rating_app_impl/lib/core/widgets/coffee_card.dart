@@ -40,24 +40,59 @@ class CoffeeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Coffee image
-            Container(
-              height: 160,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(NordicBorderRadius.card),
-                  topRight: Radius.circular(NordicBorderRadius.card),
+            // Coffee image with overlay badge
+            Stack(
+              children: [
+                Container(
+                  height: 160,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(NordicBorderRadius.card),
+                      topRight: Radius.circular(NordicBorderRadius.card),
+                    ),
+                    color: NordicColors.surface,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(NordicBorderRadius.card),
+                      topRight: Radius.circular(NordicBorderRadius.card),
+                    ),
+                    child: _buildCoffeeImage(),
+                  ),
                 ),
-                color: NordicColors.surface,
-              ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(NordicBorderRadius.card),
-                  topRight: Radius.circular(NordicBorderRadius.card),
-                ),
-                child: _buildCoffeeImage(),
-              ),
+                // "In Machine" overlay badge
+                if (isInMachine)
+                  Positioned(
+                    top: NordicSpacing.sm,
+                    right: NordicSpacing.sm,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: NordicSpacing.sm,
+                        vertical: NordicSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: NordicColors.caramel,
+                        borderRadius: BorderRadius.circular(NordicBorderRadius.small),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            offset: const Offset(0, 1),
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'In Machine',
+                        style: NordicTypography.labelMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             
             // Coffee details
@@ -116,28 +151,6 @@ class CoffeeCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                  
-                  // In machine indicator
-                  if (isInMachine) ...[
-                    const SizedBox(height: NordicSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: NordicSpacing.sm,
-                        vertical: NordicSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: NordicColors.caramel.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(NordicBorderRadius.small),
-                      ),
-                      child: Text(
-                        'In Machine',
-                        style: NordicTypography.labelMedium.copyWith(
-                          color: NordicColors.caramel,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
                   ],
                 ),
               ),

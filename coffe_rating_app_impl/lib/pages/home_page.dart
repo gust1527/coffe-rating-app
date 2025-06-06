@@ -112,7 +112,7 @@ class NordicHomePage extends StatelessWidget {
   }
 
   List<CoffeeCardData> _getRatedCoffees(List<CoffeBeanType> coffeeBeans) {
-    return coffeeBeans
+    final userRatedCoffees = coffeeBeans
         .where((bean) => bean.beanRating.isNotEmpty)
         .map((bean) {
       final averageRating = bean.beanRating.isNotEmpty
@@ -129,10 +129,39 @@ class NordicHomePage extends StatelessWidget {
         },
       );
     }).toList();
+    
+    // If user has no rated coffees yet, provide some sample data for demo
+    if (userRatedCoffees.isEmpty) {
+      return [
+        const CoffeeCardData(
+          name: 'Blue Mountain',
+          rating: 4.9,
+          roastLevel: 'Medium Roast',
+          isInMachine: true, // Show the overlay badge
+        ),
+        const CoffeeCardData(
+          name: 'Colombia Supremo',
+          rating: 4.3,
+          roastLevel: 'Light Roast',
+        ),
+        const CoffeeCardData(
+          name: 'Brazil Santos',
+          rating: 4.1,
+          roastLevel: 'Dark Roast',
+        ),
+        const CoffeeCardData(
+          name: 'Hawaii Kona',
+          rating: 4.7,
+          roastLevel: 'Medium Roast',
+        ),
+      ];
+    }
+    
+    return userRatedCoffees;
   }
 
   List<CoffeeCardData> _getCommunityFavorites() {
-    // Mock data for community favorites
+    // Mock data for community favorites - enough items to ensure scrolling
     return [
       const CoffeeCardData(
         name: 'Ethiopian Yirgacheffe',
@@ -148,6 +177,7 @@ class NordicHomePage extends StatelessWidget {
         name: 'Kenyan AA',
         rating: 4.8,
         roastLevel: 'Light Roast',
+        isInMachine: true, // Show overlay badge for demo
       ),
       const CoffeeCardData(
         name: 'Costa Rican Tarrazu',
@@ -157,6 +187,21 @@ class NordicHomePage extends StatelessWidget {
       const CoffeeCardData(
         name: 'Sumatran Mandheling',
         rating: 4.6,
+        roastLevel: 'Dark Roast',
+      ),
+      const CoffeeCardData(
+        name: 'Jamaican Blue Mountain',
+        rating: 4.9,
+        roastLevel: 'Medium Roast',
+      ),
+      const CoffeeCardData(
+        name: 'Panama Geisha',
+        rating: 4.8,
+        roastLevel: 'Light Roast',
+      ),
+      const CoffeeCardData(
+        name: 'Yemen Mocha',
+        rating: 4.4,
         roastLevel: 'Dark Roast',
       ),
     ];
