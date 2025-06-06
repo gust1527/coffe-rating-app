@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
-import 'package:coffe_rating_app_impl/ux_elements/CoffeAppBar.dart';
+import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,36 +27,84 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CoffeAppBar(appBarTitle: 'Current Coffee'),
+      backgroundColor: NordicColors.background,
+      appBar: AppBar(
+        title: Text(
+          'Coffee Machine',
+          style: NordicTypography.titleLarge,
+        ),
+        backgroundColor: NordicColors.background,
+        foregroundColor: NordicColors.textPrimary,
+        elevation: 0,
+        centerTitle: true,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: Consumer<CoffeBeanDBProvider>(
         builder: (context, provider, child) {
           // Handle loading state
           if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(NordicColors.caramel),
+                  ),
+                  const SizedBox(height: NordicSpacing.md),
+                  Text(
+                    'Loading coffee data...',
+                    style: NordicTypography.bodyMedium,
+                  ),
+                ],
+              ),
+            );
           }
 
           // Handle error state
           if (provider.error != null) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error: ${provider.error}',
-                    style: TextStyle(color: Colors.red[300]),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      provider.clearError();
-                      provider.initialize();
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(NordicSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: NordicColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(NordicBorderRadius.large),
+                      ),
+                      child: const Icon(
+                        Icons.error_outline,
+                        size: 40,
+                        color: NordicColors.error,
+                      ),
+                    ),
+                    const SizedBox(height: NordicSpacing.lg),
+                    Text(
+                      'Oops! Something went wrong',
+                      style: NordicTypography.titleMedium.copyWith(
+                        color: NordicColors.error,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: NordicSpacing.sm),
+                    Text(
+                      provider.error!,
+                      style: NordicTypography.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: NordicSpacing.xl),
+                    ElevatedButton(
+                      onPressed: () {
+                        provider.clearError();
+                        provider.initialize();
+                      },
+                      child: const Text('Try Again'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -66,94 +114,238 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
 
           // Handle case where no bean is in machine
           if (currentBean == null) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.coffee_maker_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'No coffee bean in machine',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Add a coffee bean from the coffee list',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(NordicSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: NordicColors.surface,
+                        borderRadius: BorderRadius.circular(NordicBorderRadius.large),
+                      ),
+                      child: const Icon(
+                        Icons.coffee_maker_outlined,
+                        size: 60,
+                        color: NordicColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: NordicSpacing.lg),
+                    Text(
+                      'Machine is Empty',
+                      style: NordicTypography.headlineMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: NordicSpacing.sm),
+                    Text(
+                      'Select a coffee bean from your collection to start brewing the perfect cup.',
+                      style: NordicTypography.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: NordicSpacing.xl),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Navigate to coffee list
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Choose Coffee'),
+                    ),
+                  ],
+                ),
               ),
             );
-
           }
 
           // Display the current coffee bean
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(NordicSpacing.lg),
             child: Column(
               children: [
-                const SizedBox(height: 20),
-                const Icon(
-                  Icons.coffee,
-                  size: 100,
-                  color: Colors.brown,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  currentBean.beanMaker,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  currentBean.beanType,
-                  style: const TextStyle(fontSize: 20),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                if (currentBean.beanRating.isNotEmpty) ...[
-                  Text(
-                    'Average Rating: ${currentBean.calculateMeanRating().toStringAsFixed(1)} ⭐',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                const SizedBox(height: NordicSpacing.lg),
+                
+                // Coffee illustration
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        NordicColors.primaryBrown.withOpacity(0.1),
+                        NordicColors.caramel.withOpacity(0.2),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(NordicBorderRadius.xlarge),
                   ),
-                  Text(
-                    'Total Ratings: ${currentBean.beanRating.length}',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  child: const Icon(
+                    Icons.coffee,
+                    size: 80,
+                    color: NordicColors.primaryBrown,
                   ),
-                  const SizedBox(height: 20),
-                ],
-                const SizedBox(height: 20),
-                const Text(
-                  'Rate this coffee:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 16),
-                Slider(
-                  value: beanRating,
-                  min: 0.0,
-                  max: 5.0,
-                  divisions: 5,
-                  label: beanRating == 0 ? 'Select rating' : '${beanRating.toInt()} ⭐',
-                  onChanged: (value) {
-                    setState(() {
-                      beanRating = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
+                
+                const SizedBox(height: NordicSpacing.xl),
+                
+                // Coffee information card
+                Container(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: provider.isLoading ? null : () async {
+                  padding: const EdgeInsets.all(NordicSpacing.xl),
+                  decoration: BoxDecoration(
+                    color: NordicColors.surface,
+                    borderRadius: BorderRadius.circular(NordicBorderRadius.large),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        currentBean.beanMaker,
+                        style: NordicTypography.headlineMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: NordicSpacing.xs),
+                      Text(
+                        currentBean.beanType,
+                        style: NordicTypography.titleMedium.copyWith(
+                          color: NordicColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      if (currentBean.beanRating.isNotEmpty) ...[
+                        const SizedBox(height: NordicSpacing.lg),
+                        
+                        // Rating display
+                        Container(
+                          padding: const EdgeInsets.all(NordicSpacing.md),
+                          decoration: BoxDecoration(
+                            color: NordicColors.ratingGold.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star,
+                                color: NordicColors.ratingGold,
+                                size: 24,
+                              ),
+                              const SizedBox(width: NordicSpacing.sm),
+                              Text(
+                                currentBean.calculateMeanRating().toStringAsFixed(1),
+                                style: NordicTypography.titleLarge.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: NordicSpacing.sm),
+                              Text(
+                                '(${currentBean.beanRating.length} ratings)',
+                                style: NordicTypography.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: NordicSpacing.xxl),
+                
+                // Rating section
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(NordicSpacing.xl),
+                  decoration: BoxDecoration(
+                    color: NordicColors.background,
+                    borderRadius: BorderRadius.circular(NordicBorderRadius.large),
+                    border: Border.all(color: NordicColors.divider),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Rate this Coffee',
+                        style: NordicTypography.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: NordicSpacing.sm),
+                      Text(
+                        'Help other coffee lovers by sharing your experience',
+                        style: NordicTypography.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: NordicSpacing.lg),
+                      
+                      // Star rating display
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < beanRating.toInt() ? Icons.star : Icons.star_border,
+                            color: NordicColors.ratingGold,
+                            size: 32,
+                          );
+                        }),
+                      ),
+                      
+                      const SizedBox(height: NordicSpacing.md),
+                      
+                      // Slider
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 6,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+                        ),
+                        child: Slider(
+                          value: beanRating,
+                          min: 0.0,
+                          max: 5.0,
+                          divisions: 5,
+                          label: beanRating == 0 ? 'Select rating' : '${beanRating.toInt()} ⭐',
+                          onChanged: (value) {
+                            setState(() {
+                              beanRating = value;
+                            });
+                          },
+                        ),
+                      ),
+                      
+                      const SizedBox(height: NordicSpacing.lg),
+                      
+                      // Submit button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: provider.isLoading ? null : () async {
                       // Boolean expression for readability
                       bool beanRatingIsZero = beanRating == 0;
 
                       // If the bean rating is zero, then show a snackbar
                       if (beanRatingIsZero) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please select a rating greater than 0'),
-                            duration: Duration(seconds: 3),
+                          SnackBar(
+                            content: Text(
+                              'Please select a rating greater than 0',
+                              style: NordicTypography.bodyMedium.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            backgroundColor: NordicColors.warning,
+                            duration: const Duration(seconds: 3),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+                            ),
                           ),
                         );
                       } else {
@@ -165,9 +357,18 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Rating ${beanRating.toInt()} ⭐ added to ${currentBean.beanMaker} - ${currentBean.beanType}'),
+                                content: Text(
+                                  'Rating ${beanRating.toInt()} ⭐ added to ${currentBean.beanMaker} - ${currentBean.beanType}',
+                                  style: NordicTypography.bodyMedium.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                backgroundColor: NordicColors.success,
                                 duration: const Duration(seconds: 3),
-                                backgroundColor: Colors.green,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+                                ),
                               ),
                             );
                           
@@ -180,19 +381,36 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Failed to add rating: $e'),
+                                content: Text(
+                                  'Failed to add rating: $e',
+                                  style: NordicTypography.bodyMedium.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                backgroundColor: NordicColors.error,
                                 duration: const Duration(seconds: 3),
-                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+                                ),
                               ),
                             );
                           }
                         }
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text('Submit Rating', style: TextStyle(fontSize: 16)),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: NordicSpacing.lg),
+                          ),
+                          child: Text(
+                            'Submit Rating',
+                            style: NordicTypography.labelLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
