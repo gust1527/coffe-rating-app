@@ -3,6 +3,8 @@ import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
 import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/pages/coffeBeanTypeList.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProvider.dart';
+import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/pages/home_page.dart';
 import 'package:provider/provider.dart';
 
 // Import the firebase_core plugin
@@ -29,6 +31,7 @@ class _AppState extends State<App> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
+    const NordicHomePage(),
     const CoffeBeanInMachine(),
     const CoffeBeanTypeList(),
   ];
@@ -44,30 +47,34 @@ class _AppState extends State<App> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<CoffeBeanDBProvider>(
-          create: (_) => CoffeBeanDBProvider(),
+          create: (_) => CoffeBeanDBProvider()..initialize(),
         ),
       ],
       child: MaterialApp(
-        title: 'Coffee Rating App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
-          useMaterial3: true,
-          primaryTextTheme: Typography.blackMountainView,
-        ),
+        title: 'Nordic Bean',
+        theme: NordicTheme.lightTheme,
         home: Scaffold(
           body: _pages[_currentIndex],
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: _onTabTapped,
             type: BottomNavigationBarType.fixed,
+            backgroundColor: NordicColors.background,
+            selectedItemColor: NordicColors.textPrimary,
+            unselectedItemColor: NordicColors.textSecondary,
+            elevation: 0,
             items: const [
               BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
                 icon: Icon(Icons.coffee_maker_outlined),
-                label: 'Current Coffee',
+                label: 'Machine',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.coffee_outlined),
-                label: 'Coffee List',
+                label: 'All Beans',
               ),
             ],
           ),
