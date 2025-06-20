@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 class AddCoffeBean extends StatefulWidget {
   const AddCoffeBean({super.key});
@@ -19,7 +20,14 @@ class _AddCoffeBeanState extends State<AddCoffeBean> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    CoffeeLogger.ui('Initializing AddCoffeBean form');
+  }
+
+  @override
   void dispose() {
+    CoffeeLogger.ui('Disposing AddCoffeBean form');
     _beanMakerController.dispose();
     _beanTypeController.dispose();
     _imageUrlController.dispose();
@@ -27,61 +35,58 @@ class _AddCoffeBeanState extends State<AddCoffeBean> {
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
       
-      await provider.addCoffeBeanType(
-        _beanMakerController.text.trim(),
-        _beanTypeController.text.trim(),
-        imageUrl: _imageUrlController.text.trim().isEmpty 
-          ? null 
-          : _imageUrlController.text.trim(),
+      CoffeeLogger.ui(
+        'Submitting new bean - Maker: ${_beanMakerController.text}, '
+        'Type: ${_beanTypeController.text}'
       );
 
-      if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Coffee bean added successfully!',
-              style: NordicTypography.bodyMedium.copyWith(color: Colors.white),
-            ),
-            backgroundColor: NordicColors.caramel,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-            ),
-          ),
+      try {
+        final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+        await provider.addCoffeBeanType(
+          _beanMakerController.text.trim(),
+          _beanTypeController.text.trim(),
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to add coffee bean: $e',
-              style: NordicTypography.bodyMedium.copyWith(color: Colors.white),
+
+        CoffeeLogger.ui('Successfully added new coffee bean');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Coffee bean added successfully!'),
+              backgroundColor: NordicColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
             ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+          );
+          Navigator.of(context).pop();
+        }
+      } catch (e, stackTrace) {
+        CoffeeLogger.error('Failed to add coffee bean', e, stackTrace);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: NordicColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
             ),
-          ),
-        );
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    } else {
+      CoffeeLogger.warning('Form validation failed');
     }
   }
 
