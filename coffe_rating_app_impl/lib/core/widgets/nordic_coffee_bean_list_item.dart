@@ -301,12 +301,14 @@ class NordicCoffeBeanListItem extends StatelessWidget {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: CoffeeRatingPopup(
-                bean: bean,
-                isModal: true,
-                onRatingSubmitted: () {
-                  // Note: In a StatelessWidget, we can't call setState
-                  // The parent will need to handle state updates
+                beanId: bean.id,
+                beanName: bean.displayName,
+                onSubmit: (rating) async {
+                  final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+                  await provider.addRatingsToCoffeBeanType(bean.id, rating);
+                  Navigator.pop(context);
                 },
+                onClose: () => Navigator.pop(context),
               ),
             ),
           ),

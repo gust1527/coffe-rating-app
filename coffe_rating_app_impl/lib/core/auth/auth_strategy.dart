@@ -60,7 +60,7 @@ abstract class AuthStrategy extends ChangeNotifier {
   void clearError();
 }
 
-class _AuthStrategy extends AuthStrategy {
+abstract class _AuthStrategy extends AuthStrategy {
   bool _isLoading = false;
   User? _currentUser;
   String? _error;
@@ -69,6 +69,7 @@ class _AuthStrategy extends AuthStrategy {
   User? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
   String? get error => _error;
+  String? get currentUserId => _currentUser?.id;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -91,6 +92,91 @@ class _AuthStrategy extends AuthStrategy {
       CoffeeLogger.error('Auth error', error);
     }
     notifyListeners();
+  }
+
+  @override
+  void clearError() {
+    _setError(null);
+  }
+
+  @override
+  Future<bool> loginWithToken() async {
+    CoffeeLogger.info('Attempting to login with token');
+    _setLoading(true);
+    _setError(null);
+    try {
+      // This should be implemented by concrete classes
+      return false;
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Token login failed', e, stackTrace);
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    await signOut();
+  }
+
+  @override
+  Future<void> refreshUser() async {
+    CoffeeLogger.info('Refreshing user data');
+    _setLoading(true);
+    _setError(null);
+    try {
+      // This should be implemented by concrete classes
+      _setLoading(false);
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('User refresh failed', e, stackTrace);
+      _setError(e.toString());
+      _setLoading(false);
+    }
+  }
+
+  @override
+  Future<bool> isUsernameAvailable(String username) async {
+    CoffeeLogger.info('Checking username availability: $username');
+    _setLoading(true);
+    _setError(null);
+    try {
+      // This should be implemented by concrete classes
+      return true;
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Username check failed', e, stackTrace);
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @override
+  Future<User> updateProfile({
+    String? name,
+    String? username,
+    String? location,
+    String? avatarUrl,
+    Map<String, dynamic>? preferences,
+  }) async {
+    CoffeeLogger.info('Updating user profile');
+    _setLoading(true);
+    _setError(null);
+    try {
+      // This should be implemented by concrete classes
+      if (_currentUser == null) {
+        throw Exception('No user logged in');
+      }
+      return _currentUser!;
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Profile update failed', e, stackTrace);
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
   }
 
   Future<User> authenticate({

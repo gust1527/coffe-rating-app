@@ -207,7 +207,7 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
                         child: NordicCoffeBeanListItem(
                           bean: bean,
                           onTap: () => _handleBeanTap(bean),
-                          onSetInMachine: () => _handleSetInMachine(bean),
+                          showMachineActions: true,
                         ),
                       );
                     },

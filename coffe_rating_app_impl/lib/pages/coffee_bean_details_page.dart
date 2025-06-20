@@ -776,14 +776,17 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: CoffeeRatingPopup(
-                bean: widget.bean,
-                isModal: true,
-                onRatingSubmitted: () {
+                beanId: widget.bean.id,
+                beanName: widget.bean.displayName,
+                onSubmit: (rating) async {
+                  final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+                  await provider.addRatingsToCoffeBeanType(widget.bean.id, rating);
                   if (!_disposed && mounted) {
                     CoffeeLogger.ui('Rating submitted, refreshing details page');
                     setState(() {});
                   }
                 },
+                onClose: () => Navigator.pop(context),
               ),
             ),
           ),

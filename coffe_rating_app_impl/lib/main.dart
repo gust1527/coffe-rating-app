@@ -11,6 +11,11 @@ import 'package:coffe_rating_app_impl/core/auth/auth_strategy.dart';
 import 'package:coffe_rating_app_impl/core/factory/coffee_bean_factory.dart';
 import 'package:coffe_rating_app_impl/core/enums.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProviderInterface.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
+import 'package:coffe_rating_app_impl/pages/profile_page.dart';
+import 'package:coffe_rating_app_impl/pages/coffee_bean_details_page.dart';
+import 'package:coffe_rating_app_impl/pages/coffeBeanInMachine.dart';
+import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 
 // Import the firebase_core plugin
 import 'package:firebase_core/firebase_core.dart';
@@ -20,6 +25,7 @@ late CoffeeBeanFactory coffeeBeanFactory;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  CoffeeLogger.info('Starting Nordic Coffee Bean app');
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -54,60 +60,100 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  int _currentIndex = 0;
+  bool _disposed = false;
 
-  final List<Widget> _pages = [
-    const NordicHomePage(),
-    const MachineTab(),
-    const NordicCoffeBeanTypeList(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    CoffeeLogger.info('Initializing app state');
+  }
 
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  @override
+  void dispose() {
+    CoffeeLogger.info('Disposing app state');
+    _disposed = true;
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<FirebaseDBStrategy>(
-          create: (_) => coffeeBeanFactory.dbStrategy as FirebaseDBStrategy,
-        ),
         ChangeNotifierProvider<AuthStrategy>(
-          create: (_) => coffeeBeanFactory.authStrategy,
+          create: (_) {
+            CoffeeLogger.info('Creating auth strategy provider');
+            return coffeeBeanFactory.authStrategy;
+          },
+        ),
+        ChangeNotifierProvider<FirebaseDBStrategy>(
+          create: (_) {
+            CoffeeLogger.info('Creating database strategy provider');
+            return coffeeBeanFactory.dbStrategy as FirebaseDBStrategy;
+          },
         ),
       ],
       child: MaterialApp(
-        title: 'Nordic Bean',
-        theme: NordicTheme.lightTheme,
-        home: Scaffold(
-          body: _pages[_currentIndex],
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: _onTabTapped,
-            type: BottomNavigationBarType.fixed,
+        title: 'Nordic Coffee Bean',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: NordicColors.caramel,
+            background: NordicColors.background,
+          ),
+          useMaterial3: true,
+          scaffoldBackgroundColor: NordicColors.background,
+          appBarTheme: const AppBarTheme(
             backgroundColor: NordicColors.background,
-            selectedItemColor: NordicColors.textPrimary,
-            unselectedItemColor: NordicColors.textSecondary,
+            foregroundColor: NordicColors.textPrimary,
             elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.coffee_maker_outlined),
-                label: 'Machine',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.coffee_outlined),
-                label: 'All Beans',
-              ),
-            ],
+            centerTitle: true,
+            surfaceTintColor: Colors.transparent,
           ),
         ),
+        initialRoute: '/',
+        onGenerateRoute: (settings) {
+          CoffeeLogger.info('Generating route: ${settings.name}');
+          switch (settings.name) {
+            case '/':
+              return MaterialPageRoute(
+                builder: (_) => const NordicHomePage(),
+              );
+            case '/profile':
+              return MaterialPageRoute(
+                builder: (_) => const ProfilePage(),
+              );
+            case '/bean-details':
+              final beanId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (context) {
+                  final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+                  final bean = provider.coffeeBeans.firstWhere(
+                    (bean) => bean.id == beanId,
+                    orElse: () => CoffeBeanType(
+                      id: beanId,
+                      beanMaker: 'Unknown',
+                      beanType: 'Unknown',
+                      beanRating: [],
+                      isInMachine: false,
+                    ),
+                  );
+                  return CoffeeBeanDetailsPage(bean: bean);
+                },
+              );
+            case '/machine':
+              return MaterialPageRoute(
+                builder: (_) => const CoffeBeanInMachine(),
+              );
+            case '/beans':
+              return MaterialPageRoute(
+                builder: (_) => const NordicCoffeBeanTypeList(),
+              );
+            default:
+              CoffeeLogger.error('Unknown route: ${settings.name}');
+              return MaterialPageRoute(
+                builder: (_) => const NordicHomePage(),
+              );
+          }
+        },
       ),
     );
   }
