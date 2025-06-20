@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:coffe_rating_app_impl/domain/entities/user.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 /// Strategy interface for authentication operations
 abstract class AuthStrategy extends ChangeNotifier {
@@ -56,4 +58,127 @@ abstract class AuthStrategy extends ChangeNotifier {
 
   /// Clears any error state
   void clearError();
+}
+
+class _AuthStrategy extends AuthStrategy {
+  bool _isLoading = false;
+  User? _currentUser;
+  String? _error;
+
+  bool get isLoading => _isLoading;
+  User? get currentUser => _currentUser;
+  bool get isAuthenticated => _currentUser != null;
+  String? get error => _error;
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setCurrentUser(User? user) {
+    _currentUser = user;
+    if (user != null) {
+      CoffeeLogger.info('User authenticated: ${user.email}');
+    } else {
+      CoffeeLogger.info('User signed out');
+    }
+    notifyListeners();
+  }
+
+  void _setError(String? error) {
+    _error = error;
+    if (error != null) {
+      CoffeeLogger.error('Auth error', error);
+    }
+    notifyListeners();
+  }
+
+  Future<User> authenticate({
+    required String email,
+    required String password,
+  }) async {
+    CoffeeLogger.info('Attempting to authenticate user: $email');
+    _setLoading(true);
+    _setError(null);
+
+    try {
+      final user = await signIn(email: email, password: password);
+      _setCurrentUser(user);
+      CoffeeLogger.info('Successfully authenticated user: $email');
+      return user;
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Authentication failed', e, stackTrace);
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<User> createUser({
+    required String email,
+    required String name,
+    required String username,
+    required String password,
+    String? location,
+  }) async {
+    CoffeeLogger.info('Attempting to create user: $email');
+    _setLoading(true);
+    _setError(null);
+
+    try {
+      final user = await signUp(
+        email: email,
+        name: name,
+        username: username,
+        password: password,
+        location: location,
+      );
+      _setCurrentUser(user);
+      CoffeeLogger.info('Successfully created user: $email');
+      return user;
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('User creation failed', e, stackTrace);
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> signOut() async {
+    CoffeeLogger.info('Signing out current user');
+    _setLoading(true);
+    _setError(null);
+
+    try {
+      await performSignOut();
+      _setCurrentUser(null);
+      CoffeeLogger.info('Successfully signed out user');
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Sign out failed', e, stackTrace);
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @protected
+  Future<User> signIn({
+    required String email,
+    required String password,
+  });
+
+  @protected
+  Future<User> signUp({
+    required String email,
+    required String name,
+    required String username,
+    required String password,
+    String? location,
+  });
+
+  @protected
+  Future<void> performSignOut();
 } 
