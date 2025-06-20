@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/core/auth/auth_strategy.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 class LoginForm extends StatefulWidget {
-  final VoidCallback? onSwitchToSignup;
-  final VoidCallback? onClose;
+  final Function(String email, String password) onSubmit;
+  final VoidCallback onSignupClick;
+  final bool isLoading;
+  final String? error;
 
   const LoginForm({
     super.key,
-    this.onSwitchToSignup,
-    this.onClose,
+    required this.onSubmit,
+    required this.onSignupClick,
+    this.isLoading = false,
+    this.error,
   });
 
   @override
@@ -21,289 +26,143 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isObscured = true;
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    CoffeeLogger.ui('Initializing login form');
+  }
 
   @override
   void dispose() {
+    CoffeeLogger.ui('Disposing login form');
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final authStrategy = Provider.of<AuthStrategy>(context, listen: false);
-    
-    try {
-      await authStrategy.authenticate(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-      
-      if (mounted && widget.onClose != null) {
-        widget.onClose!();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login failed: ${e.toString()}'),
-            backgroundColor: NordicColors.error,
-          ),
-        );
-      }
+  @override
+  void didUpdateWidget(LoginForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.error != oldWidget.error && widget.error != null) {
+      CoffeeLogger.error('Login error occurred', widget.error);
     }
+  }
+
+  void _handleSubmit() {
+    if (_formKey.currentState!.validate()) {
+      CoffeeLogger.ui('Attempting login with email: ${_emailController.text}');
+      widget.onSubmit(_emailController.text.trim(), _passwordController.text);
+    } else {
+      CoffeeLogger.warning('Login form validation failed');
+    }
+  }
+
+  void _togglePasswordVisibility() {
+    CoffeeLogger.ui('Toggling password visibility');
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthStrategy>(
-      builder: (context, authStrategy, child) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: NordicColors.background,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(NordicBorderRadius.large),
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _emailController,
+            decoration: InputDecoration(
+              labelText: 'Email',
+              prefixIcon: const Icon(Icons.email_outlined),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
             ),
+            keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              if (!value.contains('@')) {
+                return 'Please enter a valid email';
+              }
+              return null;
+            },
           ),
-          child: SafeArea(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header with close button
-                  Padding(
-                    padding: const EdgeInsets.all(NordicSpacing.md),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          onPressed: widget.onClose,
-                          icon: const Icon(
-                            Icons.close,
-                            color: NordicColors.textPrimary,
-                            size: 24,
-                          ),
-                        ),
-                      ],
+          const SizedBox(height: NordicSpacing.md),
+          TextFormField(
+            controller: _passwordController,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              prefixIcon: const Icon(Icons.lock_outlined),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: _togglePasswordVisibility,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
+            ),
+            obscureText: _obscurePassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+          ),
+          if (widget.error != null) ...[
+            const SizedBox(height: NordicSpacing.sm),
+            Text(
+              widget.error!,
+              style: NordicTypography.bodyMedium.copyWith(
+                color: NordicColors.error,
+              ),
+            ),
+          ],
+          const SizedBox(height: NordicSpacing.lg),
+          ElevatedButton(
+            onPressed: widget.isLoading ? null : _handleSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: NordicColors.caramel,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: NordicSpacing.md),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.button),
+              ),
+            ),
+            child: widget.isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-                  ),
-
-                  // Title
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: NordicSpacing.md,
-                      right: NordicSpacing.md,
-                      bottom: NordicSpacing.lg,
-                      top: NordicSpacing.sm,
-                    ),
-                    child: Text(
-                      'Welcome back',
-                      style: NordicTypography.headlineMedium.copyWith(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                  // Email field
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NordicSpacing.md,
-                      vertical: NordicSpacing.sm,
-                    ),
-                    child: TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                        hintStyle: TextStyle(
-                          color: NordicColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                        filled: true,
-                        fillColor: NordicColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.all(NordicSpacing.md),
-                      ),
-                      style: const TextStyle(
-                        color: NordicColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // Password field
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NordicSpacing.md,
-                      vertical: NordicSpacing.sm,
-                    ),
-                    child: TextFormField(
-                      controller: _passwordController,
-                      obscureText: _isObscured,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        hintStyle: TextStyle(
-                          color: NordicColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                        filled: true,
-                        fillColor: NordicColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.all(NordicSpacing.md),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isObscured = !_isObscured;
-                            });
-                          },
-                          icon: Icon(
-                            _isObscured ? Icons.visibility : Icons.visibility_off,
-                            color: NordicColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                      style: const TextStyle(
-                        color: NordicColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // Forgot password link
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NordicSpacing.md,
-                      vertical: NordicSpacing.xs,
-                    ),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: TextButton(
-                        onPressed: () {
-                          // TODO: Implement forgot password
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Forgot password feature coming soon'),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: NordicTypography.bodyMedium.copyWith(
-                            decoration: TextDecoration.underline,
-                            color: NordicColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Login button
-                  Padding(
-                    padding: const EdgeInsets.all(NordicSpacing.md),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: authStrategy.isLoading ? null : _handleLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NordicColors.caramel,
-                          foregroundColor: NordicColors.textPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: authStrategy.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    NordicColors.textPrimary,
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                'Log In',
-                                style: NordicTypography.labelLarge.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-
-                  // Switch to signup
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: NordicSpacing.md,
-                      right: NordicSpacing.md,
-                      bottom: NordicSpacing.lg,
-                      top: NordicSpacing.sm,
-                    ),
-                    child: TextButton(
-                      onPressed: widget.onSwitchToSignup,
-                      child: Text(
-                        "Don't have an account? Sign up",
-                        style: NordicTypography.bodyMedium.copyWith(
-                          decoration: TextDecoration.underline,
-                          color: NordicColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: NordicSpacing.sm),
-                ],
+                  )
+                : const Text('Log In'),
+          ),
+          const SizedBox(height: NordicSpacing.md),
+          TextButton(
+            onPressed: widget.onSignupClick,
+            child: Text(
+              'Don\'t have an account? Sign up',
+              style: NordicTypography.bodyMedium.copyWith(
+                color: NordicColors.caramel,
               ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 } 
