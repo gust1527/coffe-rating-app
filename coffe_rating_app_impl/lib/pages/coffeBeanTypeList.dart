@@ -7,6 +7,7 @@ import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/widgets/nordic_coffee_bean_list_item.dart';
 import 'package:coffe_rating_app_impl/ux_elements/AddCoffeBean.dart';
 import 'package:coffe_rating_app_impl/ux_elements/SetBeanInMachine.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 enum SortOption {
   ratingHigh('Rating: High to Low'),
@@ -28,14 +29,51 @@ class NordicCoffeBeanTypeList extends StatefulWidget {
 
 class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
   SortOption _currentSort = SortOption.ratingHigh;
+  bool _isLoading = false;
+  bool _disposed = false;
   
   @override
   void initState() {
     super.initState();
-    // Initialize the provider if needed
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<FirebaseDBStrategy>(context, listen: false).initialize();
+    CoffeeLogger.ui('Initializing coffee bean type list');
+    _loadCoffeeBeans();
+  }
+
+  @override
+  void dispose() {
+    CoffeeLogger.ui('Disposing coffee bean type list');
+    _disposed = true;
+    super.dispose();
+  }
+
+  Future<void> _loadCoffeeBeans() async {
+    if (_disposed) return;
+    CoffeeLogger.ui('Loading coffee beans');
+    setState(() {
+      _isLoading = true;
     });
+
+    try {
+      final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+      await provider.initialize();
+      CoffeeLogger.ui('Successfully loaded coffee beans');
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Failed to load coffee beans', e, stackTrace);
+      if (!_disposed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load coffee beans: $e'),
+            backgroundColor: NordicColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (!_disposed) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   List<CoffeBeanType> _sortCoffeeBeans(List<CoffeBeanType> beans) {
@@ -62,6 +100,43 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
     return sortedBeans;
   }
 
+  void _handleBeanTap(CoffeBeanType bean) {
+    CoffeeLogger.ui('Bean tapped: ${bean.beanMaker} ${bean.beanType}');
+    Navigator.pushNamed(
+      context,
+      '/bean-details',
+      arguments: bean.id,
+    );
+  }
+
+  void _handleSetInMachine(CoffeBeanType bean) async {
+    if (_disposed) return;
+    CoffeeLogger.ui('Setting bean in machine: ${bean.beanMaker} ${bean.beanType}');
+
+    try {
+      final provider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+      await provider.setCoffeBeanToMachine(bean.id);
+      if (!_disposed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${bean.beanType} is now in the machine'),
+            backgroundColor: NordicColors.success,
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Failed to set bean in machine', e, stackTrace);
+      if (!_disposed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to set bean in machine: $e'),
+            backgroundColor: NordicColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +154,7 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
             Expanded(
               child: Consumer<FirebaseDBStrategy>(
                 builder: (context, provider, child) {
-                  if (provider.isLoading) {
+                  if (_isLoading) {
                     return const Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(NordicColors.caramel),
@@ -116,6 +191,7 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
                   }
                   
                   if (provider.coffeeBeans.isEmpty) {
+                    CoffeeLogger.ui('No coffee beans found');
                     return _buildEmptyState();
                   }
                   
@@ -130,6 +206,8 @@ class _NordicCoffeBeanTypeListState extends State<NordicCoffeBeanTypeList> {
                         padding: const EdgeInsets.only(bottom: NordicSpacing.xs),
                         child: NordicCoffeBeanListItem(
                           bean: bean,
+                          onTap: () => _handleBeanTap(bean),
+                          onSetInMachine: () => _handleSetInMachine(bean),
                         ),
                       );
                     },
