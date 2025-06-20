@@ -3,6 +3,7 @@ import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,14 +15,31 @@ class CoffeBeanInMachine extends StatefulWidget {
 }
 
 class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
+  late FirebaseDBStrategy _dbProvider;
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
+    _dbProvider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+    _dbProvider.addListener(_onProviderUpdate);
     // Initialize the provider data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FirebaseDBStrategy>().initialize();
+      _dbProvider.initialize();
     });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _dbProvider.removeListener(_onProviderUpdate);
+    super.dispose();
+  }
+
+  void _onProviderUpdate() {
+    if (!_disposed && mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -309,6 +327,8 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
   }
 
   void _showRatingPopup(CoffeBeanType bean) async {
+    CoffeeLogger.ui('Opening rating popup for bean ${bean.id}');
+    
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -336,7 +356,10 @@ class _CoffeBeanInMachineState extends State<CoffeBeanInMachine> {
                 bean: bean,
                 isModal: true,
                 onRatingSubmitted: () {
-                  setState(() {});
+                  if (!_disposed && mounted) {
+                    CoffeeLogger.ui('Rating submitted, refreshing machine page');
+                    setState(() {});
+                  }
                 },
               ),
             ),

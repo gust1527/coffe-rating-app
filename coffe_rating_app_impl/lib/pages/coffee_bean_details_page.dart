@@ -4,6 +4,7 @@ import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
 import 'package:coffe_rating_app_impl/core/widgets/coffee_rating_popup.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 class CoffeeBeanDetailsPage extends StatefulWidget {
   final CoffeBeanType bean;
@@ -22,6 +23,29 @@ class CoffeeBeanDetailsPage extends StatefulWidget {
 }
 
 class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
+  late FirebaseDBStrategy _dbProvider;
+  bool _disposed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _dbProvider = Provider.of<FirebaseDBStrategy>(context, listen: false);
+    _dbProvider.addListener(_onProviderUpdate);
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _dbProvider.removeListener(_onProviderUpdate);
+    super.dispose();
+  }
+
+  void _onProviderUpdate() {
+    if (!_disposed && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final rating = widget.bean.calculateMeanRating();
@@ -726,6 +750,8 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
   }
 
   void _showRatingDialog() async {
+    CoffeeLogger.ui('Opening rating dialog for bean ${widget.bean.id}');
+    
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -753,7 +779,10 @@ class _CoffeeBeanDetailsPageState extends State<CoffeeBeanDetailsPage> {
                 bean: widget.bean,
                 isModal: true,
                 onRatingSubmitted: () {
-                  setState(() {});
+                  if (!_disposed && mounted) {
+                    CoffeeLogger.ui('Rating submitted, refreshing details page');
+                    setState(() {});
+                  }
                 },
               ),
             ),
