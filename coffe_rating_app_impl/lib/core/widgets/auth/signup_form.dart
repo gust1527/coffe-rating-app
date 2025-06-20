@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/core/auth/auth_strategy.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 class SignupForm extends StatefulWidget {
-  final VoidCallback? onSwitchToLogin;
-  final VoidCallback? onClose;
+  final Function(String email, String password) onSubmit;
+  final VoidCallback onLoginClick;
+  final bool isLoading;
+  final String? error;
 
   const SignupForm({
     super.key,
-    this.onSwitchToLogin,
-    this.onClose,
+    required this.onSubmit,
+    required this.onLoginClick,
+    this.isLoading = false,
+    this.error,
   });
 
   @override
@@ -22,326 +27,190 @@ class _SignupFormState extends State<SignupForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool _isPasswordObscured = true;
-  bool _isConfirmPasswordObscured = true;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    CoffeeLogger.ui('Initializing signup form');
+  }
 
   @override
   void dispose() {
+    CoffeeLogger.ui('Disposing signup form');
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleSignup() async {
-    if (!_formKey.currentState!.validate()) return;
+  @override
+  void didUpdateWidget(SignupForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.error != oldWidget.error && widget.error != null) {
+      CoffeeLogger.error('Signup error occurred', widget.error);
+    }
+  }
 
-    final authStrategy = Provider.of<AuthStrategy>(context, listen: false);
-    
-    try {
-      await authStrategy.createUser(
-        email: _emailController.text.trim(),
-        name: _emailController.text.split('@')[0], // Use email prefix as name for now
-        username: _emailController.text.split('@')[0], // Use email prefix as username for now
-        password: _passwordController.text,
-      );
-      
-      if (mounted && widget.onClose != null) {
-        widget.onClose!();
-      }
-    } catch (e) {
-      if (mounted) {
+  void _handleSubmit() {
+    if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        CoffeeLogger.warning('Password confirmation does not match');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Sign up failed: ${e.toString()}'),
+          const SnackBar(
+            content: Text('Passwords do not match'),
             backgroundColor: NordicColors.error,
           ),
         );
+        return;
       }
+
+      CoffeeLogger.ui('Attempting signup with email: ${_emailController.text}');
+      widget.onSubmit(_emailController.text.trim(), _passwordController.text);
+    } else {
+      CoffeeLogger.warning('Signup form validation failed');
     }
+  }
+
+  void _togglePasswordVisibility() {
+    CoffeeLogger.ui('Toggling password visibility');
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() {
+    CoffeeLogger.ui('Toggling confirm password visibility');
+    setState(() {
+      _obscureConfirmPassword = !_obscureConfirmPassword;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthStrategy>(
-      builder: (context, authStrategy, child) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: NordicColors.background,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(NordicBorderRadius.large),
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _emailController,
+            decoration: InputDecoration(
+              labelText: 'Email',
+              prefixIcon: const Icon(Icons.email_outlined),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
             ),
+            keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              if (!value.contains('@')) {
+                return 'Please enter a valid email';
+              }
+              return null;
+            },
           ),
-          child: SafeArea(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header with close button
-                  Padding(
-                    padding: const EdgeInsets.all(NordicSpacing.md),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          onPressed: widget.onClose,
-                          icon: const Icon(
-                            Icons.close,
-                            color: NordicColors.textPrimary,
-                            size: 24,
-                          ),
-                        ),
-                      ],
+          const SizedBox(height: NordicSpacing.md),
+          TextFormField(
+            controller: _passwordController,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              prefixIcon: const Icon(Icons.lock_outlined),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: _togglePasswordVisibility,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
+            ),
+            obscureText: _obscurePassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: NordicSpacing.md),
+          TextFormField(
+            controller: _confirmPasswordController,
+            decoration: InputDecoration(
+              labelText: 'Confirm Password',
+              prefixIcon: const Icon(Icons.lock_outlined),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: _toggleConfirmPasswordVisibility,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
+              ),
+            ),
+            obscureText: _obscureConfirmPassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your password';
+              }
+              if (value != _passwordController.text) {
+                return 'Passwords do not match';
+              }
+              return null;
+            },
+          ),
+          if (widget.error != null) ...[
+            const SizedBox(height: NordicSpacing.sm),
+            Text(
+              widget.error!,
+              style: NordicTypography.bodyMedium.copyWith(
+                color: NordicColors.error,
+              ),
+            ),
+          ],
+          const SizedBox(height: NordicSpacing.lg),
+          ElevatedButton(
+            onPressed: widget.isLoading ? null : _handleSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: NordicColors.caramel,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: NordicSpacing.md),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(NordicBorderRadius.button),
+              ),
+            ),
+            child: widget.isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-                  ),
-
-                  // Title
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: NordicSpacing.md,
-                      right: NordicSpacing.md,
-                      bottom: NordicSpacing.lg,
-                      top: NordicSpacing.sm,
-                    ),
-                    child: Text(
-                      'Create Account',
-                      style: NordicTypography.headlineMedium.copyWith(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                  // Email field
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NordicSpacing.md,
-                      vertical: NordicSpacing.sm,
-                    ),
-                    child: TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                        hintStyle: TextStyle(
-                          color: NordicColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                        filled: true,
-                        fillColor: NordicColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.all(NordicSpacing.md),
-                      ),
-                      style: const TextStyle(
-                        color: NordicColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // Password field
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NordicSpacing.md,
-                      vertical: NordicSpacing.sm,
-                    ),
-                    child: TextFormField(
-                      controller: _passwordController,
-                      obscureText: _isPasswordObscured,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        hintStyle: TextStyle(
-                          color: NordicColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                        filled: true,
-                        fillColor: NordicColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.all(NordicSpacing.md),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordObscured = !_isPasswordObscured;
-                            });
-                          },
-                          icon: Icon(
-                            _isPasswordObscured ? Icons.visibility : Icons.visibility_off,
-                            color: NordicColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                      style: const TextStyle(
-                        color: NordicColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // Confirm Password field
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NordicSpacing.md,
-                      vertical: NordicSpacing.sm,
-                    ),
-                    child: TextFormField(
-                      controller: _confirmPasswordController,
-                      obscureText: _isConfirmPasswordObscured,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Confirm Password',
-                        hintStyle: TextStyle(
-                          color: NordicColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                        filled: true,
-                        fillColor: NordicColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(NordicBorderRadius.medium),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.all(NordicSpacing.md),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isConfirmPasswordObscured = !_isConfirmPasswordObscured;
-                            });
-                          },
-                          icon: Icon(
-                            _isConfirmPasswordObscured ? Icons.visibility : Icons.visibility_off,
-                            color: NordicColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                      style: const TextStyle(
-                        color: NordicColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  // Sign up button
-                  Padding(
-                    padding: const EdgeInsets.all(NordicSpacing.md),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: authStrategy.isLoading ? null : _handleSignup,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NordicColors.caramel,
-                          foregroundColor: NordicColors.textPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: authStrategy.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    NordicColors.textPrimary,
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                'Sign Up',
-                                style: NordicTypography.labelLarge.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-
-                  // Switch to login
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: NordicSpacing.md,
-                      right: NordicSpacing.md,
-                      bottom: NordicSpacing.lg,
-                      top: NordicSpacing.sm,
-                    ),
-                    child: TextButton(
-                      onPressed: widget.onSwitchToLogin,
-                      child: Text(
-                        "Already have an account? Log in",
-                        style: NordicTypography.bodyMedium.copyWith(
-                          decoration: TextDecoration.underline,
-                          color: NordicColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: NordicSpacing.sm),
-                ],
+                  )
+                : const Text('Sign Up'),
+          ),
+          const SizedBox(height: NordicSpacing.md),
+          TextButton(
+            onPressed: widget.onLoginClick,
+            child: Text(
+              'Already have an account? Log in',
+              style: NordicTypography.bodyMedium.copyWith(
+                color: NordicColors.caramel,
               ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 } 
