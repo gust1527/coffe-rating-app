@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:coffe_rating_app_impl/core/theme/nordic_theme.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:coffe_rating_app_impl/core/database/firebase_db_strategy.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 /// Nordic-styled coffee rating popup that matches the design guidelines
 /// Can be used both as a modal popup and as a standalone page component
@@ -37,6 +38,7 @@ class _CoffeeRatingPopupState extends State<CoffeeRatingPopup> {
 
   void _submitRating() async {
     if (_selectedRating == null) {
+      CoffeeLogger.warning('Attempted to submit rating without selecting a value');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a rating'),
@@ -50,6 +52,8 @@ class _CoffeeRatingPopupState extends State<CoffeeRatingPopup> {
       return;
     }
 
+    CoffeeLogger.rating('Submitting rating ${_selectedRating!} for bean ${widget.bean.id}');
+    
     setState(() {
       _isSubmitting = true;
     });
@@ -62,8 +66,10 @@ class _CoffeeRatingPopupState extends State<CoffeeRatingPopup> {
       final reviewText = _reviewController.text.trim();
       final flavorNotes = _selectedFlavorNotes.toList();
       
-      // TODO: When database support is added, store reviewText and flavorNotes
-      // For now, we're just submitting the rating to maintain existing functionality
+      CoffeeLogger.info(
+        'Rating submitted successfully. Review length: ${reviewText.length}, '
+        'Flavor notes: ${flavorNotes.join(", ")}'
+      );
       
       if (mounted) {
         String successMessage = 'Rating ${_selectedRating!} ⭐ submitted successfully!';
@@ -89,7 +95,13 @@ class _CoffeeRatingPopupState extends State<CoffeeRatingPopup> {
         
         widget.onRatingSubmitted?.call();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      CoffeeLogger.error(
+        'Failed to submit rating for bean ${widget.bean.id}',
+        e,
+        stackTrace
+      );
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -5,6 +5,7 @@ import 'package:coffe_rating_app_impl/core/clients/pocketbase_client.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:html' as html show window;
 
 /// Custom exception for authentication operations
 class AuthException implements Exception {
@@ -26,6 +27,63 @@ class PocketBaseAuthStrategy extends AuthStrategy {
   
   static const String _tokenKey = 'pocketbase_auth_token';
   static const String _modelKey = 'pocketbase_auth_model';
+  
+  // Web-safe storage methods
+  Future<String?> _getStoredValue(String key) async {
+    try {
+      if (kIsWeb) {
+        // Use localStorage for web
+        return html.window.localStorage[key];
+      } else {
+        // Use SharedPreferences for mobile
+        final prefs = await SharedPreferences.getInstance();
+        return prefs.getString(key);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting stored value for $key: $e');
+      }
+      return null;
+    }
+  }
+  
+  Future<bool> _setStoredValue(String key, String value) async {
+    try {
+      if (kIsWeb) {
+        // Use localStorage for web
+        html.window.localStorage[key] = value;
+        return true;
+      } else {
+        // Use SharedPreferences for mobile
+        final prefs = await SharedPreferences.getInstance();
+        return await prefs.setString(key, value);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting stored value for $key: $e');
+      }
+      return false;
+    }
+  }
+  
+  Future<bool> _removeStoredValue(String key) async {
+    try {
+      if (kIsWeb) {
+        // Use localStorage for web
+        html.window.localStorage.remove(key);
+        return true;
+      } else {
+        // Use SharedPreferences for mobile
+        final prefs = await SharedPreferences.getInstance();
+        return await prefs.remove(key);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error removing stored value for $key: $e');
+      }
+      return false;
+    }
+  }
 
   PocketBaseAuthStrategy() {
     _pb = PocketBaseClient.shared.instance;
@@ -80,9 +138,8 @@ class PocketBaseAuthStrategy extends AuthStrategy {
       _currentUser = _createUserFromRecord(authData.record!);
 
       // Save auth token and model
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, _pb.authStore.token);
-      await prefs.setString(_modelKey, authData.record!.id);
+      await _setStoredValue(_tokenKey, _pb.authStore.token);
+      await _setStoredValue(_modelKey, authData.record!.id);
 
       notifyListeners();
       return _currentUser!;

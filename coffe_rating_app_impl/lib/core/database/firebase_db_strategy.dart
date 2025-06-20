@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffe_rating_app_impl/providers/CoffeBeanDBProviderInterface.dart';
 import 'package:coffe_rating_app_impl/utility/CoffeBeanType.dart';
 import 'package:flutter/foundation.dart';
+import 'package:coffe_rating_app_impl/core/utils/coffee_logger.dart';
 
 /// Firebase Database Strategy for coffee bean management
 /// This strategy manages coffee bean data and machine state using Firebase Firestore
@@ -67,6 +68,7 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
   @override
   Future<void> addRatingsToCoffeBeanType(String id, int rating) async {
     if (rating < 1 || rating > 5) {
+      CoffeeLogger.error('Invalid rating value', 'Rating must be between 1 and 5');
       throw ArgumentError('Rating must be between 1 and 5');
     }
 
@@ -74,10 +76,13 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
       _setLoading(true);
       _clearError();
 
+      CoffeeLogger.database('Retrieving current ratings for bean $id');
+      
       // Retrieve the current ratings list
       final docSnapshot = await _db.collection(_collectionName).doc(id).get();
       
       if (!docSnapshot.exists) {
+        CoffeeLogger.error('Coffee bean not found', 'Document $id does not exist');
         throw Exception('Coffee bean not found');
       }
 
@@ -90,6 +95,12 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
       // Add the new rating
       currentRatings.add(rating);
 
+      CoffeeLogger.database(
+        'Updating ratings for bean $id. '
+        'Previous count: ${currentRatings.length - 1}, '
+        'New count: ${currentRatings.length}'
+      );
+
       // Update the ratings field
       await _db.collection(_collectionName).doc(id).update({
         'bean_rating': currentRatings,
@@ -98,8 +109,12 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
       // Update local state
       await _refreshCoffeeBeans();
       
-    } catch (e) {
-      _setError('Failed to add rating: $e');
+      CoffeeLogger.database('Successfully updated ratings for bean $id');
+      
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to add rating: $e';
+      _setError(errorMsg);
+      CoffeeLogger.error(errorMsg, e, stackTrace);
       rethrow;
     } finally {
       _setLoading(false);
@@ -109,6 +124,8 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
   @override
   Future<CoffeBeanType?> getCoffeBeanInMachine() async {
     try {
+      CoffeeLogger.database('Fetching coffee bean currently in machine');
+      
       final querySnapshot = await _db
           .collection(_collectionName)
           .where('is_in_machine', isEqualTo: true)
@@ -117,12 +134,17 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
       if (querySnapshot.docs.isNotEmpty) {
         final doc = querySnapshot.docs.first;
-        return CoffeBeanType.fromJson(doc.data(), doc.id);
+        final bean = CoffeBeanType.fromJson(doc.data(), doc.id);
+        CoffeeLogger.database('Found bean in machine: ${bean.displayName}');
+        return bean;
       }
 
+      CoffeeLogger.info('No coffee bean found in machine');
       return null;
-    } catch (e) {
-      _setError('Failed to get coffee bean in machine: $e');
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to get coffee bean in machine: $e';
+      _setError(errorMsg);
+      CoffeeLogger.error(errorMsg, e, stackTrace);
       return null;
     }
   }
@@ -178,37 +200,57 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
   // Helper methods for state management
   void _setLoading(bool loading) {
     _isLoading = loading;
+    if (loading) {
+      CoffeeLogger.database('Started loading operation');
+    }
     notifyListeners();
   }
 
   void _setError(String? error) {
     _error = error;
+    if (error != null) {
+      CoffeeLogger.error('Database error occurred', error);
+    }
     notifyListeners();
   }
 
   void _clearError() {
+    if (_error != null) {
+      CoffeeLogger.database('Cleared previous error');
+    }
     _error = null;
   }
 
   // Helper method to clear machine status from all beans
   Future<void> _clearMachineStatus() async {
-    final querySnapshot = await _db
-        .collection(_collectionName)
-        .where('is_in_machine', isEqualTo: true)
-        .get();
+    try {
+      CoffeeLogger.database('Clearing machine status from all beans');
+      
+      final querySnapshot = await _db
+          .collection(_collectionName)
+          .where('is_in_machine', isEqualTo: true)
+          .get();
 
-    final batch = _db.batch();
-    
-    for (final doc in querySnapshot.docs) {
-      batch.update(doc.reference, {'is_in_machine': false});
+      final batch = _db.batch();
+      
+      for (final doc in querySnapshot.docs) {
+        batch.update(doc.reference, {'is_in_machine': false});
+      }
+
+      await batch.commit();
+      CoffeeLogger.database('Successfully cleared machine status');
+      
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Failed to clear machine status', e, stackTrace);
+      rethrow;
     }
-
-    await batch.commit();
   }
 
   // Helper method to refresh coffee beans list
   Future<void> _refreshCoffeeBeans() async {
     try {
+      CoffeeLogger.database('Refreshing coffee beans list');
+      
       final snapshot = await _db.collection(_collectionName).get();
       _coffeeBeans = snapshot.docs
           .map((doc) => CoffeBeanType.fromJson(doc.data(), doc.id))
@@ -217,11 +259,15 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
       // Update current coffee bean
       _currentCoffeeBean = await getCoffeBeanInMachine();
       
+      CoffeeLogger.database(
+        'Successfully refreshed coffee beans. '
+        'Total beans: ${_coffeeBeans.length}, '
+        'Current bean in machine: ${_currentCoffeeBean?.displayName ?? "none"}'
+      );
+      
       notifyListeners();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error refreshing coffee beans: $e');
-      }
+    } catch (e, stackTrace) {
+      CoffeeLogger.error('Error refreshing coffee beans', e, stackTrace);
     }
   }
 
