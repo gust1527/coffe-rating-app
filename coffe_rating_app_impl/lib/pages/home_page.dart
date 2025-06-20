@@ -32,12 +32,7 @@ class NordicHomePage extends StatelessWidget {
                 subtitle: 'Explore our curated selection of top-rated coffees, perfect for any brewing method.',
                 buttonText: 'Explore',
                 onButtonPressed: () {
-                  // Navigate to coffee list or machine page
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const CoffeBeanInMachine(),
-                    ),
-                  );
+                  Navigator.of(context).pushNamed('/beans');
                 },
               ),
               
@@ -52,8 +47,7 @@ class NordicHomePage extends StatelessWidget {
                     title: 'Your Rated Roasts',
                     coffees: ratedCoffees,
                     onSeeAll: () {
-                      // Navigate to full list using the navigation 
-                      
+                      Navigator.pushNamed(context, '/beans');
                     },
                   );
                 },
@@ -66,7 +60,7 @@ class NordicHomePage extends StatelessWidget {
                 title: 'Community Favorites',
                 coffees: _getCommunityFavorites(),
                 onSeeAll: () {
-                  // Navigate to community section
+                  Navigator.pushNamed(context, '/beans');
                 },
               ),
               
@@ -113,14 +107,8 @@ class NordicHomePage extends StatelessWidget {
     );
   }
 
-
-
   void _navigateToProfile(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ProfilePage(),
-      ),
-    );
+    Navigator.pushNamed(context, '/profile');
   }
 
   List<CoffeeCardData> _getRatedCoffees(List<CoffeBeanType> coffeeBeans) {
@@ -201,26 +189,11 @@ class NordicHomePage extends StatelessWidget {
         rating: 4.6,
         roastLevel: 'Dark Roast',
       ),
-      const CoffeeCardData(
-        name: 'Jamaican Blue Mountain',
-        rating: 4.9,
-        roastLevel: 'Medium Roast',
-      ),
-      const CoffeeCardData(
-        name: 'Panama Geisha',
-        rating: 4.8,
-        roastLevel: 'Light Roast',
-      ),
-      const CoffeeCardData(
-        name: 'Yemen Mocha',
-        rating: 4.4,
-        roastLevel: 'Dark Roast',
-      ),
     ];
   }
 
   String _getRandomRoastLevel() {
-    final roastLevels = ['Light Roast', 'Medium Roast', 'Dark Roast'];
-    return roastLevels[DateTime.now().millisecond % roastLevels.length];
+    const levels = ['Light Roast', 'Medium Roast', 'Dark Roast'];
+    return levels[DateTime.now().millisecondsSinceEpoch % levels.length];
   }
 } 

@@ -60,7 +60,15 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
+  int _currentIndex = 0;
   bool _disposed = false;
+
+  final List<Widget> _pages = [
+    const NordicHomePage(),
+    const CoffeBeanInMachine(),
+    const NordicCoffeBeanTypeList(),
+    const ProfilePage(),
+  ];
 
   @override
   void initState() {
@@ -73,6 +81,14 @@ class _AppState extends State<App> {
     CoffeeLogger.info('Disposing app state');
     _disposed = true;
     super.dispose();
+  }
+
+  void _onTabTapped(int index) {
+    if (_disposed) return;
+    CoffeeLogger.ui('Tab tapped: $index');
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   @override
@@ -109,7 +125,40 @@ class _AppState extends State<App> {
             surfaceTintColor: Colors.transparent,
           ),
         ),
-        initialRoute: '/',
+        home: Scaffold(
+          body: _pages[_currentIndex],
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: _onTabTapped,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: NordicColors.background,
+            selectedItemColor: NordicColors.caramel,
+            unselectedItemColor: NordicColors.textSecondary,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.coffee_maker_outlined),
+                activeIcon: Icon(Icons.coffee_maker),
+                label: 'Machine',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.coffee_outlined),
+                activeIcon: Icon(Icons.coffee),
+                label: 'Beans',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
+          ),
+        ),
         onGenerateRoute: (settings) {
           CoffeeLogger.info('Generating route: ${settings.name}');
           switch (settings.name) {

@@ -171,7 +171,7 @@ class _CoffeeRatingPopupState extends State<CoffeeRatingPopup> {
             ),
           ),
         ],
-      ),
+r      ),
     );
   }
 } 
