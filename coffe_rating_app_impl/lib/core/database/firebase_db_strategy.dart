@@ -31,6 +31,7 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
   @override
   Future<String> addCoffeBeanType(String beanMaker, String beanType, {String? imageUrl}) async {
+    CoffeeLogger.database('Adding new coffee bean - Maker: $beanMaker, Type: $beanType');
     if (beanMaker.trim().isEmpty || beanType.trim().isEmpty) {
       throw ArgumentError('Bean maker and bean type cannot be empty');
     }
@@ -56,6 +57,7 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
       // Update local state
       await _refreshCoffeeBeans();
       
+      CoffeeLogger.database('Successfully added new coffee bean with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
       _setError('Failed to add coffee bean: $e');
@@ -67,6 +69,7 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
   @override
   Future<void> addRatingsToCoffeBeanType(String id, int rating) async {
+    CoffeeLogger.database('Adding rating for bean $id - Rating: $rating');
     if (rating < 1 || rating > 5) {
       CoffeeLogger.error('Invalid rating value', 'Rating must be between 1 and 5');
       throw ArgumentError('Rating must be between 1 and 5');
@@ -123,9 +126,8 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
   @override
   Future<CoffeBeanType?> getCoffeBeanInMachine() async {
+    CoffeeLogger.database('Fetching coffee bean currently in machine');
     try {
-      CoffeeLogger.database('Fetching coffee bean currently in machine');
-      
       final querySnapshot = await _db
           .collection(_collectionName)
           .where('is_in_machine', isEqualTo: true)
@@ -174,6 +176,7 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
   
   @override
   Future<void> setCoffeBeanToMachine(String id) async {
+    CoffeeLogger.database('Setting coffee bean $id as in machine');
     try {
       _setLoading(true);
       _clearError();
@@ -223,9 +226,8 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
   // Helper method to clear machine status from all beans
   Future<void> _clearMachineStatus() async {
+    CoffeeLogger.database('Clearing machine status from all beans');
     try {
-      CoffeeLogger.database('Clearing machine status from all beans');
-      
       final querySnapshot = await _db
           .collection(_collectionName)
           .where('is_in_machine', isEqualTo: true)
@@ -248,9 +250,8 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
   // Helper method to refresh coffee beans list
   Future<void> _refreshCoffeeBeans() async {
+    CoffeeLogger.database('Refreshing coffee beans list');
     try {
-      CoffeeLogger.database('Refreshing coffee beans list');
-      
       final snapshot = await _db.collection(_collectionName).get();
       _coffeeBeans = snapshot.docs
           .map((doc) => CoffeBeanType.fromJson(doc.data(), doc.id))
@@ -284,6 +285,7 @@ class FirebaseDBStrategy with ChangeNotifier implements CoffeeBeanDBProviderInte
 
   @override
   Future<void> updateCoffeBeanImage(String id, String imageUrl) async {
+    CoffeeLogger.database('Updating coffee bean image for $id');
     try {
       _setLoading(true);
       _clearError();
